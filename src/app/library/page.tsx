@@ -1,37 +1,41 @@
 'use client';
 
-import { UserButton } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
-import { BookOpenIcon, BookmarkIcon } from "@heroicons/react/24/outline";
+import { BookmarkIcon, ArrowUpTrayIcon, FolderIcon } from "@heroicons/react/24/outline";
+import Navbar from "@/components/Navbar";
 
 export default function Library() {
   const { userId } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* 复用导航栏 */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        {/* 导航栏代码与 notebooks 相同，但 Library 链接高亮 */}
-        {/* ... */}
-      </nav>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
 
-      <main className="max-w-5xl mx-auto mt-16 px-6">
-        <div className="flex flex-col space-y-6">
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">My Library</h1>
-          {/* 这里添加library的内容 */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* 示例文档列表 */}
-            <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <BookmarkIcon className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <h3 className="text-base font-medium text-gray-900">Research Paper Title</h3>
-                    <p className="text-sm text-gray-500">Added Jan 10, 2024</p>
-                  </div>
+          <button className="flex items-center space-x-2 px-4 py-2 bg-[#087B7B] text-white rounded-lg hover:bg-[#076666] transition-colors">
+            <ArrowUpTrayIcon className="w-5 h-5" />
+            <span>Upload Files</span>
+          </button>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+          {/* 文档列表项 */}
+          <div className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <FolderIcon className="w-6 h-6 text-[#087B7B]" />
                 </div>
-                <button className="text-sm text-[#087B7B] hover:text-[#076666]">View</button>
+                <div>
+                  <h3 className="text-base font-medium text-gray-900">Research Paper Title</h3>
+                  <p className="text-sm text-gray-500 mt-1">Added Jan 10, 2024 • PDF • 2.3 MB</p>
+                </div>
               </div>
+              <button className="px-3 py-1.5 text-sm text-[#087B7B] hover:text-[#076666] hover:bg-gray-100 rounded-md transition-colors">
+                View
+              </button>
             </div>
           </div>
         </div>
