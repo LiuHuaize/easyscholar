@@ -29,8 +29,9 @@ export default function Home() {
 
   // 处理搜索选项点击
   const handleSearchOptionClick = (type: SearchOptionType) => {
-    const notebookId = uuidv4(); // 生成唯一的notebookId
-    router.push(`/notebooks/${notebookId}?type=${type}`);
+    const notebookId = uuidv4();
+    const searchText = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
+    router.push(`/notebooks/${notebookId}?type=${type}&q=${encodeURIComponent(searchText)}`);
   };
 
   const searchOptions: SearchOptionsConfig = {
