@@ -5,6 +5,8 @@ import { auth } from "@clerk/nextjs/server";
 import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useState, useRef } from 'react';
 import { useAuth } from "@clerk/nextjs";
+import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 
 // 定义搜索选项类型
 type SearchOptionType = 'papers' | 'web';
@@ -20,9 +22,16 @@ type SearchOptionsConfig = {
 
 export default function Home() {
   const { userId } = useAuth();
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<SearchOptionType>('papers');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 处理搜索选项点击
+  const handleSearchOptionClick = (type: SearchOptionType) => {
+    const notebookId = uuidv4(); // 生成唯一的notebookId
+    router.push(`/notebooks/${notebookId}?type=${type}`);
+  };
 
   const searchOptions: SearchOptionsConfig = {
     papers: {
@@ -116,6 +125,7 @@ export default function Home() {
                           onClick={() => {
                             setSelectedOption(key as SearchOptionType);
                             setIsDropdownOpen(false);
+                            handleSearchOptionClick(key as SearchOptionType);
                           }}
                           className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 ${
                             selectedOption === key ? 'text-[#087B7B] bg-gray-50' : 'text-gray-600'
