@@ -53,7 +53,7 @@ export default function Home() {
             ResearchAI
           </a>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/notebooks" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
+            <a href="/history" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
               <BookOpenIcon className="h-4 w-4" />
               <span className="text-sm">Notebooks</span>
             </a>
@@ -130,26 +130,17 @@ export default function Home() {
                 </div>
 
                 <div className="relative group">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    multiple
-                    accept=".pdf,.doc,.docx"
-                  />
                   <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="h-[52px] w-[52px] bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center text-gray-600 relative"
+                    className="h-[52px] w-[52px] bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center text-gray-600 cursor-not-allowed relative"
                     aria-label="Upload files"
                   >
                     <PlusIcon className="w-6 h-6 group-hover:text-[#087B7B] transition-colors" />
                   </button>
                   
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
                     <div className="text-sm text-gray-600 leading-relaxed">
-                      <p className="font-medium text-[#087B7B] mb-2">Upload Reference Files</p>
-                      <p>Your documents will be analyzed by AI to enhance search results and provide more accurate, contextual responses.</p>
+                      <p className="font-medium text-[#087B7B] mb-2">Coming Soon!</p>
+                      <p className="text-gray-500 text-xs">Your documents will be analyzed by AI to enhance search results and provide more accurate, contextual responses.</p>
                     </div>
                     <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
                   </div>
