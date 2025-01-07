@@ -25,16 +25,16 @@ export async function POST(request: Request) {
         messages: [
           {
             role: "system",
-            content: `Summarize academic paper abstracts in one concise and fluent sentence (maximum 85 characters).
+            content: `Summarize academic paper abstracts in one concise, naturalfluent sentence (maximum 200 characters).
 Focus on the key methodology and main finding only. Be direct, specific and friendly.`
           },
           {
             role: "user",
-            content: `Please provide a one-sentence summary (max 85 chars):\n\n${paper.abstract}`
+            content: `Please provide a summary (max 200 chars):\n\n${paper.abstract}`
           }
         ],
         temperature: 0.3,
-        max_tokens: 105,
+        max_tokens: 280,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
       });

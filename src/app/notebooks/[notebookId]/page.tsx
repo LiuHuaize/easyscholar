@@ -172,7 +172,7 @@ export default function NotebooksPage() {
             ) : (
               <>
                 {/* 论文列表表头 */}
-                <div className="flex items-center h-12 mb-2 border-b border-gray-100">
+                <div className="flex items-center h-12 mb-2 border-b border-gray-100 bg-gray-100/90">
                   <div className="w-6 ml-4">
                     <input 
                       type="checkbox" 
@@ -182,10 +182,10 @@ export default function NotebooksPage() {
                     />
                   </div>
                   <div className="flex-1 pr-6">
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Paper</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Paper</span>
                   </div>
                   <div className="w-[400px]">
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Summary</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Summary</span>
                   </div>
                 </div>
 
@@ -202,25 +202,62 @@ export default function NotebooksPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
-                        <div className="flex flex-col gap-2">
-                          <h3 className="text-[14px] font-medium text-gray-800 leading-normal 
+                        <div className="flex flex-col gap-3">
+                          <h3 className="text-[15px] font-medium text-gray-800 leading-normal 
                                      hover:text-[#087B7B] cursor-pointer transition-colors">
                             {paper.title}
                           </h3>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <div className="flex items-center">
-                              <span className="text-sm text-gray-600">{paper.authors?.[0]?.name}</span>
+                          
+                          {/* 作者信息行 */}
+                          <div className="flex items-center gap-2">
+                            <div className="text-gray-400">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                              </svg>
+                            </div>
+                            <div className="flex items-center text-gray-600 text-[13px]">
+                              <span>{paper.authors?.[0]?.name}</span>
                               {paper.authors?.length > 1 && (
-                                <span className="ml-1 text-sm text-gray-400">+{paper.authors.length - 1}</span>
+                                <span className="ml-1 text-gray-400">+{paper.authors.length - 1}</span>
                               )}
                             </div>
-                            <span className="text-gray-300">•</span>
-                            <span className="text-sm text-gray-500">{paper.year}</span>
+                          </div>
+
+                          {/* 期刊信息行 */}
+                          {paper.venue && (
+                            <div className="flex items-center gap-2">
+                              <div className="text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                                </svg>
+                              </div>
+                              <span className="text-[13px] text-gray-600 leading-normal">{paper.venue}</span>
+                            </div>
+                          )}
+
+                          {/* 年份和引用信息行 */}
+                          <div className="flex items-center gap-x-2 text-[13px]">
+                            <span className="text-gray-500">{paper.year}</span>
                             <span className="text-gray-300">•</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-sm text-gray-500">{paper.citationCount}</span>
-                              <span className="text-sm text-gray-500">citations</span>
+                              <span className="text-gray-500">{paper.citationCount}</span>
+                              <span className="text-gray-500">citations</span>
                             </div>
+                            {paper.url && (
+                              <>
+                                <span className="text-gray-300">•</span>
+                                <a 
+                                  href={paper.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-gray-500 hover:text-[#087B7B] flex items-center gap-1"
+                                >
+                                  URL
+                                  <ExternalLink size={12} className="inline-block" />
+                                </a>
+                              </>
+                            )}
                             {paper.doi && (
                               <>
                                 <span className="text-gray-300">•</span>
@@ -228,7 +265,7 @@ export default function NotebooksPage() {
                                   href={`https://doi.org/${paper.doi}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-sm text-gray-500 hover:text-[#087B7B] flex items-center gap-1"
+                                  className="text-gray-500 hover:text-[#087B7B] flex items-center gap-1"
                                 >
                                   DOI
                                   <ExternalLink size={12} className="inline-block" />
