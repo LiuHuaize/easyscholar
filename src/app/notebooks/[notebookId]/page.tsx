@@ -82,10 +82,10 @@ export default function NotebooksPage() {
   }, [searchParams])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFBFC]">
       <Navbar />
 
-      <div className="max-w-screen-xl mx-auto px-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8">
         {/* Summary of top papers */}
         <div className="py-6 border-b">
           <div className="flex items-center justify-between mb-4">
@@ -148,8 +148,8 @@ export default function NotebooksPage() {
         </div>
 
         {/* 内容区域 */}
-        <div className="flex mt-2">
-          <div className="flex-1 pr-6">
+        <div className="flex flex-col lg:flex-row mt-6 gap-6">
+          <div className="flex-1 bg-white rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <div className="relative">
@@ -172,54 +172,54 @@ export default function NotebooksPage() {
             ) : (
               <>
                 {/* 论文列表表头 */}
-                <div className="flex items-center h-12 mb-2 border-b border-gray-100 bg-gray-100/90">
-                  <div className="w-6 ml-4">
+                <div className="flex items-center h-14 px-4 md:px-6 border-b border-[#E5E7EB] bg-white sticky top-0 z-10">
+                  <div className="w-6">
                     <input 
                       type="checkbox" 
-                      className="w-3.5 h-3.5 rounded border-gray-200 accent-[#0E5E5E]
+                      className="w-3.5 h-3.5 rounded border-[#D1D5DB] accent-[#0E5E5E]
                                focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
                                hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                     />
                   </div>
-                  <div className="flex-1 pr-6">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Paper</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-[#111827]">Paper</span>
                   </div>
-                  <div className="w-[400px]">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Summary</span>
+                  <div className="w-[450px] flex-shrink-0 hidden lg:block">
+                    <span className="text-sm font-medium text-[#111827]">Abstract summary</span>
                   </div>
                 </div>
 
                 {/* 论文列表内容 */}
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-[#F3F4F6]">
                   {papers.map((paper: any) => (
-                    <div key={paper.paperId} className="flex items-start py-4 hover:bg-gray-50/50 transition-colors group">
-                      <div className="w-6 ml-4 mt-[3px]">
+                    <div key={paper.paperId} className="flex flex-col lg:flex-row items-start p-4 md:p-6 hover:bg-[#F9FAFB] transition-colors group">
+                      <div className="w-6 mt-[3px]">
                         <input 
                           type="checkbox" 
-                          className="w-3.5 h-3.5 rounded border-gray-200 accent-[#0E5E5E]
+                          className="w-3.5 h-3.5 rounded border-[#D1D5DB] accent-[#0E5E5E]
                                    focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
                                    hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                         />
                       </div>
-                      <div className="flex-1 min-w-0 pr-6">
+                      <div className="flex-1 min-w-0 lg:pr-8 mt-0 lg:mt-0">
                         <div className="flex flex-col gap-3">
-                          <h3 className="text-[15px] font-medium text-gray-800 leading-normal 
+                          <h3 className="text-[14px] font-medium text-[#111827] leading-normal 
                                      hover:text-[#087B7B] cursor-pointer transition-colors">
                             {paper.title}
                           </h3>
                           
                           {/* 作者信息行 */}
                           <div className="flex items-center gap-2">
-                            <div className="text-gray-400">
+                            <div className="text-[#9CA3AF]">
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                               </svg>
                             </div>
-                            <div className="flex items-center text-gray-600 text-[13px]">
+                            <div className="flex items-center text-[#4B5563] text-[13px]">
                               <span>{paper.authors?.[0]?.name}</span>
                               {paper.authors?.length > 1 && (
-                                <span className="ml-1 text-gray-400">+{paper.authors.length - 1}</span>
+                                <span className="ml-1 text-[#9CA3AF]">+{paper.authors.length - 1}</span>
                               )}
                             </div>
                           </div>
@@ -227,31 +227,31 @@ export default function NotebooksPage() {
                           {/* 期刊信息行 */}
                           {paper.venue && (
                             <div className="flex items-center gap-2">
-                              <div className="text-gray-400">
+                              <div className="text-[#9CA3AF]">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
                                 </svg>
                               </div>
-                              <span className="text-[13px] text-gray-600 leading-normal">{paper.venue}</span>
+                              <span className="text-[13px] text-[#4B5563] leading-normal break-words">{paper.venue}</span>
                             </div>
                           )}
 
                           {/* 年份和引用信息行 */}
-                          <div className="flex items-center gap-x-2 text-[13px]">
-                            <span className="text-gray-500">{paper.year}</span>
-                            <span className="text-gray-300">•</span>
+                          <div className="flex items-center gap-x-2 text-[13px] flex-wrap">
+                            <span className="text-[#6B7280]">{paper.year}</span>
+                            <span className="text-[#D1D5DB]">•</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-500">{paper.citationCount}</span>
-                              <span className="text-gray-500">citations</span>
+                              <span className="text-[#6B7280]">{paper.citationCount}</span>
+                              <span className="text-[#6B7280]">citations</span>
                             </div>
                             {paper.url && (
                               <>
-                                <span className="text-gray-300">•</span>
+                                <span className="text-[#D1D5DB]">•</span>
                                 <a 
                                   href={paper.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-gray-500 hover:text-[#087B7B] flex items-center gap-1"
+                                  className="text-[#6B7280] hover:text-[#087B7B] flex items-center gap-1"
                                 >
                                   URL
                                   <ExternalLink size={12} className="inline-block" />
@@ -260,12 +260,12 @@ export default function NotebooksPage() {
                             )}
                             {paper.doi && (
                               <>
-                                <span className="text-gray-300">•</span>
+                                <span className="text-[#D1D5DB]">•</span>
                                 <a 
                                   href={`https://doi.org/${paper.doi}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-gray-500 hover:text-[#087B7B] flex items-center gap-1"
+                                  className="text-[#6B7280] hover:text-[#087B7B] flex items-center gap-1"
                                 >
                                   DOI
                                   <ExternalLink size={12} className="inline-block" />
@@ -275,19 +275,19 @@ export default function NotebooksPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="w-[400px] text-sm text-gray-600 pt-[2px]">
+                      <div className="w-full lg:w-[450px] flex-shrink-0 text-sm text-[#4B5563] mt-4 lg:mt-0">
                         {loadingSummaries[paper.paperId] ? (
                           <div className="flex items-center gap-2 h-5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                            <span className="text-xs text-gray-500">Generating summary...</span>
+                            <span className="text-xs text-[#6B7280]">Generating summary...</span>
                           </div>
                         ) : summaries[paper.paperId] ? (
-                          <p className="text-gray-600 leading-normal">
+                          <p className="text-[#4B5563] leading-normal">
                             {summaries[paper.paperId]}
                           </p>
                         ) : (
                           <div className="h-5 flex items-center">
-                            <span className="text-sm text-gray-400">No summary available</span>
+                            <span className="text-sm text-[#9CA3AF]">Cannot access the paper, unable to summarize</span>
                           </div>
                         )}
                       </div>
@@ -299,11 +299,11 @@ export default function NotebooksPage() {
           </div>
 
           {/* 右侧列管理区域 */}
-          <div className="w-72 flex-shrink-0 border-l pl-6">
-            <div className="sticky top-4">
+          <div className="w-full lg:w-80 flex-shrink-0">
+            <div className="sticky top-4 bg-white rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-medium text-gray-900">Manage Columns</h3>
-                <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-50 transition-colors">
+                <h3 className="text-base font-medium text-[#111827]">Manage Columns</h3>
+                <button className="p-1.5 text-[#9CA3AF] hover:text-[#6B7280] rounded-md hover:bg-[#F9FAFB] transition-colors">
                   <Settings2 size={14} />
                 </button>
               </div>
