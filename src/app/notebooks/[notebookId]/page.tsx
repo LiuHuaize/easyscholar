@@ -176,8 +176,9 @@ export default function NotebooksPage() {
                   <div className="w-6 ml-4">
                     <input 
                       type="checkbox" 
-                      className="w-3.5 h-3.5 rounded border-gray-300 text-[#087B7B] 
-                               focus:ring-1 focus:ring-[#087B7B] focus:ring-offset-0" 
+                      className="w-3.5 h-3.5 rounded border-gray-200 accent-[#0E5E5E]
+                               focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
+                               hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                     />
                   </div>
                   <div className="flex-1 pr-6">
@@ -195,8 +196,9 @@ export default function NotebooksPage() {
                       <div className="w-6 ml-4 mt-[3px]">
                         <input 
                           type="checkbox" 
-                          className="w-3.5 h-3.5 rounded border-gray-300 text-[#087B7B] 
-                                   focus:ring-1 focus:ring-[#087B7B] focus:ring-offset-0" 
+                          className="w-3.5 h-3.5 rounded border-gray-200 accent-[#0E5E5E]
+                                   focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
+                                   hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                         />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
