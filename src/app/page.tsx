@@ -1,9 +1,8 @@
 'use client';
 
 import { UserButton, SignInButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,49 +10,40 @@ import { v4 as uuidv4 } from 'uuid';
 // 定义搜索选项类型
 type SearchOptionType = 'papers' | 'web';
 
-// 定义搜索选项配置类型
-type SearchOptionsConfig = {
-  [K in SearchOptionType]: {
-    text: string;
-    icon: typeof DocumentArrowUpIcon;
-    placeholder: string;
-  };
-};
-
 export default function Home() {
   const { userId } = useAuth();
   const router = useRouter();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<SearchOptionType>('papers');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSearchOptions, setShowSearchOptions] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const searchOptionsRef = useRef<HTMLDivElement>(null);
 
   // 处理搜索选项点击
   const handleSearchOptionClick = (type: SearchOptionType) => {
+    setIsLoading(true);
     const notebookId = uuidv4();
-    const searchText = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
     router.push(`/notebooks/${notebookId}?type=${type}&q=${encodeURIComponent(searchText)}`);
   };
 
-  const searchOptions: SearchOptionsConfig = {
-    papers: {
-      text: "Search Academic Papers",
-      icon: DocumentArrowUpIcon,
-      placeholder: "Search in academic papers database..."
-    },
-    web: {
-      text: "Search Web Information",
-      icon: GlobeAltIcon,
-      placeholder: "Search across web resources..."
+  // 处理回车键
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setShowSearchOptions(true);
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      console.log('Files selected:', files);
-      // TODO: 实现文件上传到服务器的逻辑
-    }
-  };
+  // 点击外部关闭搜索选项
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchOptionsRef.current && !searchOptionsRef.current.contains(event.target as Node)) {
+        setShowSearchOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -103,39 +93,63 @@ export default function Home() {
             <div className="relative mb-6">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input 
-                    type="text"
-                    placeholder={searchOptions[selectedOption].placeholder}
-                    className="w-full h-[52px] px-4 bg-gray-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#087B7B] focus:bg-white text-gray-800 placeholder-gray-400 transition-all"
-                  />
-                  
-                  <div className="absolute right-0 top-0 h-full flex items-center">
-                    <button 
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="h-full px-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors border-l border-gray-200"
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      placeholder="Search papers..."
+                      className="w-full h-[52px] pl-4 pr-12 bg-gray-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#087B7B] focus:bg-white text-gray-800 placeholder-gray-400 transition-all"
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                    />
+                    <button
+                      onClick={() => setShowSearchOptions(true)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-md transition-colors group"
+                      disabled={isLoading}
                     >
-                      <ArrowRightIcon className="w-5 h-5" />
+                      {isLoading ? (
+                        <div className="w-5 h-5 relative">
+                          <div className="absolute top-0 left-0 w-full h-full border-2 border-gray-200 rounded-full"></div>
+                          <div className="absolute top-0 left-0 w-full h-full border-2 border-[#087B7B] rounded-full animate-spin border-t-transparent"></div>
+                        </div>
+                      ) : (
+                        <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#087B7B]" />
+                      )}
                     </button>
                   </div>
-
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 top-14 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                      {Object.entries(searchOptions).map(([key, option]) => (
-                        <button
-                          key={key}
-                          onClick={() => {
-                            setSelectedOption(key as SearchOptionType);
-                            setIsDropdownOpen(false);
-                            handleSearchOptionClick(key as SearchOptionType);
-                          }}
-                          className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50 ${
-                            selectedOption === key ? 'text-[#087B7B] bg-gray-50' : 'text-gray-600'
-                          }`}
-                        >
-                          <option.icon className="w-5 h-5" />
-                          <span className="text-sm">{option.text}</span>
-                        </button>
-                      ))}
+                  
+                  {/* 搜索选项弹出框 */}
+                  {showSearchOptions && !isLoading && (
+                    <div 
+                      ref={searchOptionsRef}
+                      className="absolute top-full right-0 mt-2 w-[280px] bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
+                    >
+                      <button
+                        onClick={() => handleSearchOptionClick('papers')}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group"
+                        disabled={isLoading}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                          <BookOpenIcon className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-medium text-gray-700">Search Academic Papers</span>
+                          <span className="text-xs text-gray-500">Find research papers and articles</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleSearchOptionClick('web')}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group"
+                        disabled={isLoading}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                          <GlobeAltIcon className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-medium text-gray-700">Search Web Information</span>
+                          <span className="text-xs text-gray-500">Search across web resources</span>
+                        </div>
+                      </button>
                     </div>
                   )}
                 </div>
