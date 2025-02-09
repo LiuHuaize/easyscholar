@@ -46,19 +46,29 @@ export default function NotebooksPage() {
     if (!query) return
     try {
       setIsLoading(true)
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      })
+      const response = await fetch(`/api/semanticsearch?query=${encodeURIComponent(query)}&limit=10&offset=0`)
 
       if (!response.ok) throw new Error('Search failed')
       const data = await response.json()
-      setPapers(data.papers)
-      setTotalResults(data.total)
+      
+      // 转换数据结构以匹配UI需求
+      const transformedPapers = data.articles.map((paper: any) => ({
+        paperId: paper.id,
+        title: paper.title,
+        authors: paper.authors.map((name: string) => ({ name })),
+        abstract: paper.abstract,
+        year: paper.year,
+        venue: paper.journal,
+        citationCount: 'N/A',  // Semantic Scholar API 没有返回引用数
+        url: paper.openAccessPdf,
+        keywords: paper.keywords
+      }))
+      
+      setPapers(transformedPapers)
+      setTotalResults(data.articles.length)
       
       // 搜索完成后，为每篇论文异步获取摘要
-      data.papers.forEach((paper: any) => {
+      transformedPapers.forEach((paper: any) => {
         fetchSummary(paper)
       })
     } catch (error) {
@@ -236,39 +246,32 @@ export default function NotebooksPage() {
                             </div>
                           )}
 
-                          {/* 年份和引用信息行 */}
+                          {/* 年份和关键词信息行 */}
                           <div className="flex items-center gap-x-2 text-[13px] flex-wrap">
                             <span className="text-[#6B7280]">{paper.year}</span>
-                            <span className="text-[#D1D5DB]">•</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-[#6B7280]">{paper.citationCount}</span>
-                              <span className="text-[#6B7280]">citations</span>
-                            </div>
+                            {paper.keywords && paper.keywords.length > 0 && (
+                              <>
+                                <span className="text-[#D1D5DB]">•</span>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {paper.keywords.map((keyword: string, index: number) => (
+                                    <span key={index} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs">
+                                      {keyword}
+                                    </span>
+                                  ))}
+                                </div>
+                              </>
+                            )}
                             {paper.url && (
                               <>
                                 <span className="text-[#D1D5DB]">•</span>
                                 <a 
-                                  href={paper.url}
-                                  target="_blank"
+                                  href={paper.url} 
+                                  target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-[#6B7280] hover:text-[#087B7B] flex items-center gap-1"
+                                  className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
                                 >
-                                  URL
-                                  <ExternalLink size={12} className="inline-block" />
-                                </a>
-                              </>
-                            )}
-                            {paper.doi && (
-                              <>
-                                <span className="text-[#D1D5DB]">•</span>
-                                <a 
-                                  href={`https://doi.org/${paper.doi}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[#6B7280] hover:text-[#087B7B] flex items-center gap-1"
-                                >
-                                  DOI
-                                  <ExternalLink size={12} className="inline-block" />
+                                  <ExternalLink size={12} />
+                                  <span>PDF</span>
                                 </a>
                               </>
                             )}
