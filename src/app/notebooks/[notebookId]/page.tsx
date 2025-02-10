@@ -91,42 +91,24 @@ export default function NotebooksPage() {
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8">
-        {/* Summary of top papers */}
-        <div className="py-6 border-b">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-medium text-gray-900">Summary of top</h2>
-              <button className="flex items-center gap-1 text-sm text-gray-600">
-                4 papers
-                <ChevronDown size={14} />
-              </button>
-            </div>
-            <button className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md border border-gray-200">
-              Copy
-            </button>
-          </div>
-          <div className="text-sm text-gray-600 leading-relaxed min-h-[60px]">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-4 text-gray-400">
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                <span>Generating summary...</span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
         {/* 搜索区域 */}
-        <div className="py-4">
-          <div className="relative w-full max-w-3xl">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-              className="w-full h-10 pl-9 pr-4 bg-white border border-gray-100 rounded-full text-[15px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#087B7B] focus:border-[#087B7B]"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <Search className="w-4 h-4 stroke-[1.5]" />
+        <div className="py-8">
+          <div className="relative w-full max-w-3xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                placeholder="Search papers, authors, keywords..."
+                className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#087B7B]/20 focus:border-[#087B7B]"
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search className="w-5 h-5 stroke-[1.5]" />
+              </div>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                Press Enter ↵
+              </div>
             </div>
           </div>
         </div>
@@ -153,8 +135,8 @@ export default function NotebooksPage() {
         </div>
 
         {/* 内容区域 */}
-        <div className="flex flex-col lg:flex-row mt-6 gap-6">
-          <div className="flex-1 bg-white rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB]">
+        <div className="mt-6">
+          <div className="max-w-[1200px] mx-auto bg-white rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB]">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <div className="relative">
@@ -177,7 +159,7 @@ export default function NotebooksPage() {
             ) : (
               <>
                 {/* 论文列表表头 */}
-                <div className="flex items-center h-14 px-4 md:px-6 border-b border-[#E5E7EB] bg-white sticky top-0 z-10">
+                <div className="flex items-center h-14 px-6 border-b border-[#E5E7EB] bg-white sticky top-0 z-10">
                   <div className="w-6">
                     <input 
                       type="checkbox" 
@@ -189,7 +171,7 @@ export default function NotebooksPage() {
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium text-[#111827]">Paper</span>
                   </div>
-                  <div className="w-[450px] flex-shrink-0 hidden lg:block">
+                  <div className="w-[450px] flex-shrink-0">
                     <span className="text-sm font-medium text-[#111827]">Abstract summary</span>
                   </div>
                 </div>
@@ -197,7 +179,7 @@ export default function NotebooksPage() {
                 {/* 论文列表内容 */}
                 <div className="divide-y divide-[#F3F4F6]">
                   {papers.map((paper: any) => (
-                    <div key={paper.paperId} className="flex flex-col lg:flex-row items-start p-4 md:p-6 hover:bg-[#F9FAFB] transition-colors group">
+                    <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group">
                       <div className="w-6 mt-[3px]">
                         <input 
                           type="checkbox" 
@@ -206,7 +188,7 @@ export default function NotebooksPage() {
                                    hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                         />
                       </div>
-                      <div className="flex-1 min-w-0 lg:pr-8 mt-0 lg:mt-0">
+                      <div className="flex-1 min-w-0 pr-8">
                         <div className="flex flex-col gap-3">
                           <h3 className="text-[14px] font-medium text-[#111827] leading-normal 
                                      hover:text-[#087B7B] cursor-pointer transition-colors">
@@ -273,7 +255,7 @@ export default function NotebooksPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="w-full lg:w-[450px] flex-shrink-0 text-sm text-[#4B5563] mt-4 lg:mt-0">
+                      <div className="w-[450px] flex-shrink-0 text-sm text-[#4B5563]">
                         {loadingSummaries[paper.paperId] ? (
                           <div className="flex items-center gap-2 h-5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
@@ -294,43 +276,6 @@ export default function NotebooksPage() {
                 </div>
               </>
             )}
-          </div>
-
-          {/* 右侧列管理区域 */}
-          <div className="w-full lg:w-80 flex-shrink-0">
-            <div className="sticky top-4 bg-white rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-[#E5E7EB] p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-medium text-[#111827]">Manage Columns</h3>
-                <button className="p-1.5 text-[#9CA3AF] hover:text-[#6B7280] rounded-md hover:bg-[#F9FAFB] transition-colors">
-                  <Settings2 size={14} />
-                </button>
-              </div>
-
-              <div className="mb-6 relative">
-                <input
-                  type="text"
-                  placeholder="Search or create a column"
-                  className="w-full h-9 pl-8 pr-3 text-sm bg-gray-50 border-0 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#087B7B] transition-all"
-                />
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-                    CURRENT COLUMNS
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between group py-1">
-                      <span className="text-sm text-gray-900">Summary</span>
-                      <button className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-50 transition-all">
-                        <Edit2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
