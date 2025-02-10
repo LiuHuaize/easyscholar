@@ -1,17 +1,21 @@
 import { OpenAI } from 'openai';
 import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
+
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 const client = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
-  baseURL: 'https://api.deepseek.com/v1'
+  apiKey: process.env.AIHUBMIX_API_KEY,
+  baseURL: 'https://aihubmix.com/v1'
 });
 
 export async function POST(request: Request) {
   try {
     // 获取客户端信息用于区分请求来源
     const headersList = await headers();
-    const userAgent = headersList.get('user-agent') ?? 'unknown';
-    const clientIp = headersList.get('x-forwarded-for') ?? 'unknown';
+    const userAgent = headersList.get('user-agent') || 'unknown';
+    const clientIp = headersList.get('x-forwarded-for') || 'unknown';
 
     const { papers } = await request.json();
 
@@ -35,7 +39,7 @@ export async function POST(request: Request) {
 
       try {
         const response = await client.chat.completions.create({
-          model: "deepseek-chat",
+          model: "gemini-2.0-flash",
           messages: [
             {
               role: "system",
