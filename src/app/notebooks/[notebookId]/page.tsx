@@ -82,13 +82,8 @@ export default function NotebooksPage() {
     const query = searchParams.get('q')
     if (query) {
       setSearchQuery(query)
-      if (isFirstRender.current) {
-        handleSearch(query)
-        isFirstRender.current = false
-      }
-    } else {
-      setIsLoading(false)
     }
+    setIsLoading(false)
   }, [searchParams])
 
   return (
