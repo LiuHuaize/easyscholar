@@ -58,25 +58,25 @@ export default function Home() {
           <div className="hidden md:flex items-center space-x-8">
             <a href="/history" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
               <BookOpenIcon className="h-4 w-4" />
-              <span className="text-sm">Notebooks</span>
+              <span className="text-sm">笔记本</span>
             </a>
             <a href="/library" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
               <BookmarkIcon className="h-4 w-4" />
-              <span className="text-sm">Library</span>
+              <span className="text-sm">文献库</span>
             </a>
           </div>
         </div>
 
         <div className="flex items-center space-x-8">
           <button className="text-sm text-gray-600 hover:text-gray-900">
-            Help
+            帮助
           </button>
           {userId ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
             <SignInButton mode="modal">
               <button className="px-4 py-2 bg-[#087B7B] text-white text-sm rounded-lg hover:bg-[#076666] transition-colors">
-                Sign In
+                登录
               </button>
             </SignInButton>
           )}
@@ -90,7 +90,7 @@ export default function Home() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              <h2 className="text-lg font-medium">Discover Research Insights</h2>
+              <h2 className="text-lg font-medium">发现研究洞察</h2>
             </div>
             
             <div className="relative mb-6">
@@ -99,7 +99,7 @@ export default function Home() {
                   <div className="relative">
                     <input 
                       type="text"
-                      placeholder="Search papers..."
+                      placeholder="搜索论文..."
                       className="w-full h-[52px] pl-4 pr-12 bg-gray-50 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#087B7B] focus:bg-white text-gray-800 placeholder-gray-400 transition-all"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
@@ -136,21 +136,24 @@ export default function Home() {
                           <BookOpenIcon className="w-4 h-4 text-gray-500" />
                         </div>
                         <div className="flex flex-col items-start">
-                          <span className="text-sm font-medium text-gray-700">Search Academic Papers</span>
-                          <span className="text-xs text-gray-500">Find research papers and articles</span>
+                          <span className="text-sm font-medium text-gray-700">搜索学术论文</span>
+                          <span className="text-xs text-gray-500">查找研究论文和文章</span>
                         </div>
                       </button>
                       <button
                         onClick={() => handleSearchOptionClick('web')}
-                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group"
-                        disabled={isLoading}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group cursor-not-allowed opacity-60"
+                        disabled={true}
                       >
                         <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
                           <GlobeAltIcon className="w-4 h-4 text-gray-500" />
                         </div>
                         <div className="flex flex-col items-start">
-                          <span className="text-sm font-medium text-gray-700">Search Web Information</span>
-                          <span className="text-xs text-gray-500">Search across web resources</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">搜索网络信息</span>
+                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                          </div>
+                          <span className="text-xs text-gray-500">功能开发中</span>
                         </div>
                       </button>
                     </div>
@@ -167,8 +170,8 @@ export default function Home() {
                   
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
                     <div className="text-sm text-gray-600 leading-relaxed">
-                      <p className="font-medium text-[#087B7B] mb-2">Coming Soon!</p>
-                      <p className="text-gray-500 text-xs">Your documents will be analyzed by AI to enhance search results and provide more accurate, contextual responses.</p>
+                      <p className="font-medium text-[#087B7B] mb-2">即将推出！</p>
+                      <p className="text-gray-500 text-xs">您的文档将由 AI 分析，以提供更准确的搜索结果和上下文响应。</p>
                     </div>
                     <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
                   </div>
@@ -177,19 +180,31 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <button className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm group">
+              <button 
+                className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm group cursor-not-allowed opacity-60"
+                disabled
+              >
                 <DocumentArrowUpIcon className="w-5 h-5 text-gray-400 group-hover:text-[#087B7B]" />
-                <span>Extract data from PDFs</span>
+                <div className="flex items-center space-x-2">
+                  <span>从 PDF 提取数据</span>
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                </div>
               </button>
-              <button className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm group">
+              <button 
+                className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm group cursor-not-allowed opacity-60"
+                disabled
+              >
                 <SparklesIcon className="w-5 h-5 text-gray-400 group-hover:text-[#087B7B]" />
-                <span>List of concepts</span>
+                <div className="flex items-center space-x-2">
+                  <span>概念列表</span>
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                </div>
               </button>
             </div>
           </div>
 
           <div className="w-full max-w-3xl">
-            <h3 className="text-sm font-medium text-gray-500 mb-2 px-1">Recent</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-2 px-1">最近</h3>
             <div className="space-y-1">
               <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 rounded-lg group cursor-pointer">
                 <div className="flex items-center space-x-3">

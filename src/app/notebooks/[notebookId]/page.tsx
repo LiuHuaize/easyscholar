@@ -92,7 +92,7 @@ export default function NotebooksPage() {
         body: JSON.stringify({ papers: [paper] }),
       });
 
-      if (!response.ok) throw new Error('Failed to fetch summary');
+      if (!response.ok) throw new Error('无法获取摘要');
       const data = await response.json();
       
       if (data.summaries?.[0]?.summary) {
@@ -103,14 +103,14 @@ export default function NotebooksPage() {
       } else if (data.summaries?.[0]?.error) {
         setSummaries(prev => ({
           ...prev,
-          [paper.paperId]: "Error generating summary"
+          [paper.paperId]: "生成摘要时出错"
         }));
       }
     } catch (error) {
       console.error('Summary error:', error);
       setSummaries(prev => ({
         ...prev,
-        [paper.paperId]: "Error generating summary"
+        [paper.paperId]: "生成摘要时出错"
       }));
     } finally {
       setLoadingSummaries(prev => ({ ...prev, [paper.paperId]: false }));
@@ -137,7 +137,7 @@ export default function NotebooksPage() {
         body: JSON.stringify({ prompt: query })
       });
       
-      if (!keywordsRes.ok) throw new Error('Failed to generate keywords');
+      if (!keywordsRes.ok) throw new Error('无法生成关键词');
       const { keywords: generatedKeywords } = await keywordsRes.json();
       
       // 设置所有关键词的初始加载状态为true
@@ -162,7 +162,7 @@ export default function NotebooksPage() {
           const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
           const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
           
-          if (!response.ok) throw new Error(`Search failed for keyword: ${keyword}`);
+          if (!response.ok) throw new Error(`关键词搜索失败: ${keyword}`);
           const data = await response.json();
           
           const transformedPapers = data.articles
@@ -173,7 +173,7 @@ export default function NotebooksPage() {
               abstract: paper.abstract,
               year: paper.year,
               venue: paper.journal,
-              citationCount: 'N/A',
+              citationCount: '暂无',
               url: paper.openAccessPdf,
               keywords: paper.keywords,
               searchKeyword: keyword
@@ -207,14 +207,14 @@ export default function NotebooksPage() {
             if (!paper.abstract) {
               setSummaries(prev => ({
                 ...prev,
-                [paper.paperId]: "No abstract provided"
+                [paper.paperId]: "未提供摘要"
               }));
               return Promise.resolve();
             }
             return fetchSummary(paper);
           }));
         } catch (error) {
-          console.error(`Search error for keyword ${keyword}:`, error);
+          console.error(`关键词 ${keyword} 搜索出错:`, error);
           setKeywordResults(prev => ({
             ...prev,
             [keyword]: []
@@ -235,7 +235,7 @@ export default function NotebooksPage() {
       }
       
     } catch (error) {
-      console.error('Search error:', error)
+      console.error('搜索出错:', error)
       setIsLoading(false)
       setIsGeneratingKeywords(false)
     }
