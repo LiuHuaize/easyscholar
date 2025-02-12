@@ -18,6 +18,8 @@ export default function NotebooksPage() {
   const [keywords, setKeywords] = useState<string[]>([])
   const [keywordResults, setKeywordResults] = useState<{[key: string]: any[]}>({})
   const [loadingKeywords, setLoadingKeywords] = useState<{[key: string]: boolean}>({})
+  const [insightContent, setInsightContent] = useState('')
+  const [insightLoading, setInsightLoading] = useState(false)
   const searchParams = useSearchParams()
   const isFirstRender = useRef(true)
 
@@ -45,6 +47,36 @@ export default function NotebooksPage() {
     }
     
     return lines.join('\n');
+  };
+
+  const generateInsight = async (query: string, papers: any[]) => {
+    try {
+      setInsightLoading(true);
+      const validPapers = papers.filter(paper => 
+        paper.abstract && paper.abstract !== "No abstract provided"
+      );
+
+      if (validPapers.length === 0) return;
+
+      const response = await fetch('/api/generate-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: query,
+          papers: validPapers
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate insight');
+      const { insight } = await response.json();
+      
+      setInsightContent(insight);
+    } catch (error) {
+      console.error('Insight generation error:', error);
+      setInsightContent('无法生成研究洞察');
+    } finally {
+      setInsightLoading(false);
+    }
   };
 
   const fetchSummary = async (paper: any) => {
@@ -93,6 +125,8 @@ export default function NotebooksPage() {
       setKeywordResults({})
       setPapers([])
       setLoadingKeywords({})
+      setInsightContent('')
+      setInsightLoading(false)
       
       // 生成关键词
       const keywordsRes = await fetch('/api/generate-keywords', {
@@ -115,17 +149,17 @@ export default function NotebooksPage() {
       setIsGeneratingKeywords(false)
       setIsLoading(false)
 
-      // 为每个关键词并行搜索并更新结果
-      const searchType = localStorage.getItem('notebookSearchType') || 'papers';
-      const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
-      
       // 创建一个Map来存储已经显示的论文ID，避免重复
       const displayedPaperIds = new Set();
+      let allPapers: any[] = [];
       
-      // 并行处理每个关键词的搜索，但逐个更新UI
-      generatedKeywords.forEach(async (keyword: string) => {
+      // 并行处理每个关键词的搜索
+      const searchPromises = generatedKeywords.map(async (keyword: string) => {
         try {
+          const searchType = localStorage.getItem('notebookSearchType') || 'papers';
+          const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
           const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
+          
           if (!response.ok) throw new Error(`Search failed for keyword: ${keyword}`);
           const data = await response.json();
           
@@ -153,6 +187,7 @@ export default function NotebooksPage() {
             [keyword]: transformedPapers
           }));
 
+          allPapers = [...allPapers, ...transformedPapers];
           setPapers(prev => {
             const newPapers = [...prev, ...transformedPapers];
             setTotalResults(newPapers.length);
@@ -165,29 +200,37 @@ export default function NotebooksPage() {
             [keyword]: false
           }));
 
-          transformedPapers.forEach((paper: any) => {
+          // 获取摘要
+          await Promise.all(transformedPapers.map(paper => {
             if (!paper.abstract) {
               setSummaries(prev => ({
                 ...prev,
                 [paper.paperId]: "No abstract provided"
               }));
-            } else {
-              fetchSummary(paper);
+              return Promise.resolve();
             }
-          });
+            return fetchSummary(paper);
+          }));
         } catch (error) {
           console.error(`Search error for keyword ${keyword}:`, error);
           setKeywordResults(prev => ({
             ...prev,
             [keyword]: []
           }));
-          // 即使出错也要更新加载状态
           setLoadingKeywords(prev => ({
             ...prev,
             [keyword]: false
           }));
         }
       });
+
+      // 等待所有搜索完成
+      await Promise.all(searchPromises);
+      
+      // 在所有论文加载完成后生成Insight
+      if (allPapers.length > 0) {
+        await generateInsight(query, allPapers);
+      }
       
     } catch (error) {
       console.error('Search error:', error)
@@ -263,6 +306,43 @@ export default function NotebooksPage() {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Insight 区域 - 移到搜索结果上方 */}
+        {(insightContent || insightLoading || (keywords.length > 0 && !isLoading)) && (
+          <div className="my-6 p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
+                <path d="M12 2v8"/>
+                <path d="m16 6-4-4-4 4"/>
+                <path d="M3 10h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10Z"/>
+                <path d="M7 15h10"/>
+                <path d="M7 19h10"/>
+              </svg>
+              <h3 className="text-lg font-medium text-[#111827]">研究洞察</h3>
+            </div>
+            {insightContent ? (
+              <div className="text-[#4B5563] leading-relaxed whitespace-pre-line">
+                {insightContent}
+              </div>
+            ) : insightLoading ? (
+              <div className="flex items-center gap-3 text-[#087B7B]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <span>正在生成研究洞察...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>等待搜索完成后生成研究洞察...</span>
+              </div>
+            )}
           </div>
         )}
 
