@@ -464,7 +464,11 @@ export default function NotebooksPage() {
                           </div>
                         ) : (
                           keywordPapers.map((paper: any) => (
-                            <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group animate-fadeIn">
+                            <div
+                              key={paper.paperId}
+                              id={`paper-${paper.paperId}`}
+                              className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group animate-fadeIn"
+                            >
                               <div className="w-6 mt-[3px]">
                                 <input 
                                   type="checkbox" 

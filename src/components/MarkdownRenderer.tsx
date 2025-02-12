@@ -22,10 +22,14 @@ const CitationPopup = ({ children, papers = [], ...props }: any) => {
   
   const handleClick = React.useCallback(() => {
     const element = document.getElementById(`paper-${paperId}`);
+    console.log('Trying to scroll to paper:', paperId);
+    console.log('Element found:', element);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       element.classList.add('bg-green-50');
       setTimeout(() => element.classList.remove('bg-green-50'), 2000);
+    } else {
+      console.warn('Paper element not found:', paperId);
     }
   }, [paperId]);
 
@@ -35,7 +39,7 @@ const CitationPopup = ({ children, papers = [], ...props }: any) => {
         <Tooltip.Trigger asChild>
           <sup className="inline-flex items-center">
             <cite 
-              className="text-[10px] text-[#087B7B] cursor-pointer hover:text-[#065e5e]" 
+              className="text-[13px] text-[#087B7B] cursor-pointer hover:text-[#065e5e] font-medium px-1.5 py-0.5 rounded bg-[#F0F9F9] hover:bg-[#E5F2F2] transition-all" 
               style={{ fontStyle: 'normal' }}
               data-paper-id={paperId}
               onClick={handleClick}
@@ -46,10 +50,18 @@ const CitationPopup = ({ children, papers = [], ...props }: any) => {
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content 
-            className="bg-white px-4 py-2 rounded-lg shadow-lg border text-sm max-w-md z-50"
+            className="bg-white px-5 py-3 rounded-xl shadow-lg border border-[#E5F2F2] text-sm max-w-md z-50 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
             sideOffset={5}
           >
-            {paper ? paper.title : '点击查看引用详情'} (ID: {paperId})
+            <div className="flex flex-col gap-1">
+              <div className="font-medium text-gray-900">{paper ? paper.title : '点击查看引用详情'}</div>
+              {paper && (
+                <div className="text-[13px] text-gray-500 flex items-center gap-1">
+                  <span>ID:</span>
+                  <span className="font-mono text-[12px] bg-gray-50 px-1.5 py-0.5 rounded">{paperId}</span>
+                </div>
+              )}
+            </div>
             <Tooltip.Arrow className="fill-white" />
           </Tooltip.Content>
         </Tooltip.Portal>
