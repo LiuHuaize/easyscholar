@@ -8,11 +8,13 @@ import CitationButton from '@/components/CitationButton'
 
 export default function NotebooksPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [papers, setPapers] = useState([])
+  const [papers, setPapers] = useState<any[]>([])
   const [summaries, setSummaries] = useState<{[key: string]: string}>({})
   const [loadingSummaries, setLoadingSummaries] = useState<{[key: string]: boolean}>({})
   const [totalResults, setTotalResults] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [keywords, setKeywords] = useState<string[]>([])
+  const [keywordResults, setKeywordResults] = useState<{[key: string]: any[]}>({})
   const searchParams = useSearchParams()
   const isFirstRender = useRef(true)
 
@@ -82,31 +84,61 @@ export default function NotebooksPage() {
     if (!query) return
     try {
       setIsLoading(true)
+      setKeywords([])
+      setKeywordResults({})
+      
+      // 生成关键词
+      const keywordsRes = await fetch('/api/generate-keywords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: query })
+      });
+      
+      if (!keywordsRes.ok) throw new Error('Failed to generate keywords');
+      const { keywords: generatedKeywords } = await keywordsRes.json();
+      setKeywords(generatedKeywords);
+
+      // 并行搜索每个关键词
       const searchType = localStorage.getItem('notebookSearchType') || 'papers';
       const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
-      const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(query)}&limit=10&offset=0`)
+      
+      const searchPromises = generatedKeywords.map(async (keyword: string) => {
+        const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
+        if (!response.ok) throw new Error(`Search failed for keyword: ${keyword}`);
+        const data = await response.json();
+        return { keyword, data };
+      });
 
-      if (!response.ok) throw new Error('Search failed')
-      const data = await response.json()
+      const results = await Promise.all(searchPromises);
       
-      // 转换数据结构以匹配UI需求
-      const transformedPapers = data.articles.map((paper: any) => ({
-        paperId: paper.id,
-        title: paper.title,
-        authors: paper.authors.map((name: string) => ({ name })),
-        abstract: paper.abstract,
-        year: paper.year,
-        venue: paper.journal,
-        citationCount: 'N/A',
-        url: paper.openAccessPdf,
-        keywords: paper.keywords
-      }))
+      // 处理每个关键词的结果
+      const newKeywordResults: {[key: string]: any[]} = {};
+      const allPapers: any[] = [];
       
-      setPapers(transformedPapers)
-      setTotalResults(data.articles.length)
+      results.forEach(({ keyword, data }) => {
+        const transformedPapers = data.articles.map((paper: any) => ({
+          paperId: paper.id,
+          title: paper.title,
+          authors: paper.authors.map((name: string) => ({ name })),
+          abstract: paper.abstract,
+          year: paper.year,
+          venue: paper.journal,
+          citationCount: 'N/A',
+          url: paper.openAccessPdf,
+          keywords: paper.keywords,
+          searchKeyword: keyword // 添加搜索关键词标记
+        }));
+        
+        newKeywordResults[keyword] = transformedPapers;
+        allPapers.push(...transformedPapers);
+      });
+
+      setKeywordResults(newKeywordResults);
+      setPapers(allPapers);
+      setTotalResults(allPapers.length);
       
-      // 搜索完成后，只为有摘要的论文获取摘要
-      transformedPapers.forEach((paper: any) => {
+      // 获取摘要
+      allPapers.forEach((paper: any) => {
         if (!paper.abstract) {
           setSummaries(prev => ({
             ...prev,
@@ -115,7 +147,8 @@ export default function NotebooksPage() {
         } else {
           fetchSummary(paper);
         }
-      })
+      });
+      
     } catch (error) {
       console.error('Search error:', error)
     } finally {
@@ -155,7 +188,7 @@ export default function NotebooksPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                placeholder="Search papers, authors, keywords..."
+                placeholder="输入研究问题，AI将生成关键词并搜索相关论文..."
                 className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#087B7B]/20 focus:border-[#087B7B]"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -167,6 +200,23 @@ export default function NotebooksPage() {
             </div>
           </div>
         </div>
+
+        {/* 关键词展示 */}
+        {keywords.length > 0 && (
+          <div className="flex items-center gap-2 py-3 border-b border-gray-100">
+            <span className="text-[15px] text-gray-500">搜索关键词：</span>
+            <div className="flex flex-wrap gap-2">
+              {keywords.map((keyword, index) => (
+                <span 
+                  key={index}
+                  className="px-2.5 py-1 bg-blue-50 text-blue-700 text-sm rounded-full"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 工具栏 */}
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
