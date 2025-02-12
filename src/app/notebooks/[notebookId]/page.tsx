@@ -4,6 +4,7 @@ import { Search, ChevronDown, Filter, Globe, ChevronRight, Plus, Settings2, Edit
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import CitationButton from '@/components/CitationButton'
 
 export default function NotebooksPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -252,6 +253,8 @@ export default function NotebooksPage() {
                                 </a>
                               </>
                             )}
+                            <span className="text-[#D1D5DB]">•</span>
+                            <CitationButton paperId={paper.paperId} />
                           </div>
                         </div>
                       </div>
