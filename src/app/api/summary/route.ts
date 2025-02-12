@@ -33,14 +33,6 @@ export async function POST(request: Request) {
     }
 
     const summaryPromises = papers.map(async (paper) => {
-      if (!paper.abstract) {
-        return { 
-          id: paper.paperId, 
-          summary: "No abstract provided",
-          error: null 
-        };
-      }
-
       try {
         const response = await client.chat.completions.create({
           model: "gemini-2.0-flash",
@@ -48,11 +40,12 @@ export async function POST(request: Request) {
             {
               role: "system",
               content: `Summarize academic paper abstracts in one concise, natural fluent sentence (maximum 300 characters).
+If no abstract is provided, generate a brief summary based on the paper title.
 Focus on the key methodology and main finding only. Be direct, specific and friendly.`
             },
             {
               role: "user",
-              content: `Please provide a summary (max 300 chars):\n\n${paper.abstract}`
+              content: `Please provide a summary (max 300 chars) for:\nTitle: ${paper.title}\nAbstract: ${paper.abstract || '(No abstract provided)'}`
             }
           ],
           temperature: 0.3,

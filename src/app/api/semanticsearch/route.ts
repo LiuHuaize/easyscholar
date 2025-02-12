@@ -94,17 +94,21 @@ export async function GET(request: Request) {
         );
 
         const data = await response.json();
+        
+        // 添加调试日志
+        console.log('First paper data:', JSON.stringify(data.data[0], null, 2));
 
         const articles = data.data.map((item: SemanticScholarItem) => ({
             id: item.paperId,
             title: item.title,
             authors: item.authors.map(author => author.name),
-            abstract: item.abstract || '',
+            abstract: item.abstract,
             year: item.year || 'N/A',
             journal: item.venue || 'Unknown',
             keywords: item.s2FieldsOfStudy?.map(field => field.category) || [],
             publicationType: item.publicationTypes?.[0] || 'Unknown',
             openAccessPdf: item.openAccessPdf?.url || null,
+            semanticUrl: `https://www.semanticscholar.org/paper/${item.paperId}`
         }));
 
         return NextResponse.json({

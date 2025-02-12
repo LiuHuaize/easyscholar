@@ -9,18 +9,25 @@ class TranslationCacheManager {
   private static instance: TranslationCacheManager;
   private cache: TranslationCache = {};
   private readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24小时过期
+  private isClient: boolean;
 
   private constructor() {
-    // 从 localStorage 恢复缓存
-    try {
-      const savedCache = localStorage.getItem('translationCache');
-      if (savedCache) {
-        this.cache = JSON.parse(savedCache);
-        this.cleanExpiredCache();
+    this.isClient = typeof window !== 'undefined';
+    this.initializeCache();
+  }
+
+  private initializeCache(): void {
+    if (this.isClient) {
+      try {
+        const savedCache = window.localStorage.getItem('translationCache');
+        if (savedCache) {
+          this.cache = JSON.parse(savedCache);
+          this.cleanExpiredCache();
+        }
+      } catch (error) {
+        console.error('Failed to load translation cache:', error);
+        this.cache = {};
       }
-    } catch (error) {
-      console.error('Failed to load translation cache:', error);
-      this.cache = {};
     }
   }
 
@@ -42,10 +49,12 @@ class TranslationCacheManager {
   }
 
   private saveCache(): void {
-    try {
-      localStorage.setItem('translationCache', JSON.stringify(this.cache));
-    } catch (error) {
-      console.error('Failed to save translation cache:', error);
+    if (this.isClient) {
+      try {
+        window.localStorage.setItem('translationCache', JSON.stringify(this.cache));
+      } catch (error) {
+        console.error('Failed to save translation cache:', error);
+      }
     }
   }
 

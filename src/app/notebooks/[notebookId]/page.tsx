@@ -203,7 +203,8 @@ export default function NotebooksPage() {
               year: paper.year,
               venue: paper.journal,
               citationCount: '暂无',
-              url: paper.openAccessPdf,
+              url: paper.semanticUrl,
+              pdfUrl: paper.openAccessPdf,
               keywords: paper.keywords,
               searchKeyword: keyword
             }))
@@ -225,6 +226,9 @@ export default function NotebooksPage() {
             return newPapers;
           });
 
+          // 为每篇论文获取摘要
+          await Promise.all(transformedPapers.map((paper: Paper) => fetchSummary(paper)));
+
         } catch (error) {
           console.error(`关键词 ${keyword} 搜索出错:`, error);
           // 如果是超时错误,显示特定提示
@@ -242,23 +246,6 @@ export default function NotebooksPage() {
             ...prev,
             [keyword]: false
           }));
-
-          // 获取当前关键词的论文
-          const currentPapers = keywordResults[keyword] || [];
-          
-          // 如果有论文,则获取摘要
-          if (currentPapers.length > 0) {
-            await Promise.all(currentPapers.map((paper: Paper) => {
-              if (!paper.abstract) {
-                setSummaries(prev => ({
-                  ...prev,
-                  [paper.paperId]: "未提供摘要"
-                }));
-                return Promise.resolve();
-              }
-              return fetchSummary(paper);
-            }));
-          }
         }
       });
 
@@ -662,6 +649,20 @@ export default function NotebooksPage() {
                                         <span className="text-[#D1D5DB]">•</span>
                                         <a 
                                           href={paper.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
+                                        >
+                                          <ExternalLink size={12} />
+                                          <span>论文</span>
+                                        </a>
+                                      </>
+                                    )}
+                                    {paper.pdfUrl && (
+                                      <>
+                                        <span className="text-[#D1D5DB]">•</span>
+                                        <a 
+                                          href={paper.pdfUrl} 
                                           target="_blank" 
                                           rel="noopener noreferrer"
                                           className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
