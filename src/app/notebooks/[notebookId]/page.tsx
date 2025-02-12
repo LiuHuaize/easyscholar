@@ -229,7 +229,7 @@ export default function NotebooksPage() {
               {keywords.map((keyword, index) => (
                 <span 
                   key={index}
-                  className="px-2.5 py-1 bg-blue-50 text-blue-700 text-sm rounded-full"
+                  className="px-2.5 py-1 bg-[#F0F9F9] text-[#087B7B] text-sm rounded-full border border-[#E5F2F2] hover:bg-[#E5F2F2] transition-colors"
                 >
                   {keyword}
                 </span>
@@ -315,120 +315,142 @@ export default function NotebooksPage() {
 
                 {/* 论文列表内容 */}
                 <div className="divide-y divide-[#F3F4F6]">
-                  {papers.map((paper: any) => (
-                    <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group animate-fadeIn">
-                      <div className="w-6 mt-[3px]">
-                        <input 
-                          type="checkbox" 
-                          className="w-3.5 h-3.5 rounded border-[#D1D5DB] accent-[#0E5E5E]
-                                   focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
-                                   hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
-                        />
-                      </div>
-                      {/* 左侧论文信息 */}
-                      <div className="flex-1 min-w-0 pr-4 border-r border-[#E5E7EB]">
-                        <div className="flex flex-col gap-3">
-                          <div className="mb-1.5">
-                            <h3 className="text-[15px] font-medium text-[#111827]">
-                              <a 
-                                href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:text-[#087B7B] transition-colors whitespace-pre-line break-words block"
-                                style={{ 
-                                  lineHeight: '1.75rem',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: '3',
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden'
-                                }}
-                              >
-                                {formatTitle(paper.title)}
-                              </a>
-                            </h3>
-                          </div>
-                          
-                          {/* 作者信息行 */}
+                  {keywords.map((keyword) => {
+                    const keywordPapers = keywordResults[keyword] || [];
+                    if (keywordPapers.length === 0) return null;
+                    
+                    return (
+                      <div key={keyword} className="py-4">
+                        {/* 关键词标题 */}
+                        <div className="px-6 py-3 bg-[#F9FAFB]">
                           <div className="flex items-center gap-2">
-                            <div className="text-[#9CA3AF]">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                              </svg>
+                            <span className="px-3 py-1 bg-[#E5F2F2] text-[#087B7B] text-sm font-medium rounded-full">
+                              {keyword}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              找到 {keywordPapers.length} 篇相关论文
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* 该关键词下的论文列表 */}
+                        {keywordPapers.map((paper: any) => (
+                          <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group animate-fadeIn">
+                            <div className="w-6 mt-[3px]">
+                              <input 
+                                type="checkbox" 
+                                className="w-3.5 h-3.5 rounded border-[#D1D5DB] accent-[#0E5E5E]
+                                         focus:ring-1 focus:ring-[#0F766E]/20 focus:ring-offset-0
+                                         hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
+                              />
                             </div>
-                            <div className="flex items-center text-[#4B5563] text-[13px]">
-                              <span>{paper.authors?.[0]?.name}</span>
-                              {paper.authors?.length > 1 && (
-                                <span className="ml-1 text-[#9CA3AF]">+{paper.authors.length - 1}</span>
+                            {/* 左侧论文信息 */}
+                            <div className="flex-1 min-w-0 pr-4 border-r border-[#E5E7EB]">
+                              <div className="flex flex-col gap-3">
+                                <div className="mb-1.5">
+                                  <h3 className="text-[15px] font-medium text-[#111827]">
+                                    <a 
+                                      href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="hover:text-[#087B7B] transition-colors whitespace-pre-line break-words block"
+                                      style={{ 
+                                        lineHeight: '1.75rem',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: '3',
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                      }}
+                                    >
+                                      {formatTitle(paper.title)}
+                                    </a>
+                                  </h3>
+                                </div>
+                                
+                                {/* 作者信息行 */}
+                                <div className="flex items-center gap-2">
+                                  <div className="text-[#9CA3AF]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                      <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                  </div>
+                                  <div className="flex items-center text-[#4B5563] text-[13px]">
+                                    <span>{paper.authors?.[0]?.name}</span>
+                                    {paper.authors?.length > 1 && (
+                                      <span className="ml-1 text-[#9CA3AF]">+{paper.authors.length - 1}</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* 期刊信息行 */}
+                                {paper.venue && (
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-[#9CA3AF]">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                                      </svg>
+                                    </div>
+                                    <span className="text-[13px] text-[#4B5563] leading-normal break-words line-clamp-1">{paper.venue}</span>
+                                  </div>
+                                )}
+
+                                {/* 年份和关键词信息行 */}
+                                <div className="flex items-center gap-x-2 text-[13px] flex-wrap">
+                                  <span className="text-[#6B7280]">{paper.year}</span>
+                                  {paper.keywords && paper.keywords.length > 0 && (
+                                    <>
+                                      <span className="text-[#D1D5DB]">•</span>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {paper.keywords.map((kw: string, index: number) => (
+                                          <span key={index} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs">
+                                            {kw}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                  {paper.url && (
+                                    <>
+                                      <span className="text-[#D1D5DB]">•</span>
+                                      <a 
+                                        href={paper.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
+                                      >
+                                        <ExternalLink size={12} />
+                                        <span>PDF</span>
+                                      </a>
+                                    </>
+                                  )}
+                                  <span className="text-[#D1D5DB]">•</span>
+                                  <CitationButton paperId={paper.paperId} />
+                                </div>
+                              </div>
+                            </div>
+                            {/* 右侧摘要 */}
+                            <div className="w-[450px] flex-shrink-0 text-sm text-[#4B5563] pl-4">
+                              {loadingSummaries[paper.paperId] ? (
+                                <div className="flex items-center gap-2 h-5">
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
+                                  <span className="text-xs text-[#6B7280]">生成摘要中...</span>
+                                </div>
+                              ) : summaries[paper.paperId] ? (
+                                <p className="text-[#4B5563] leading-relaxed text-[15px]">
+                                  {summaries[paper.paperId]}
+                                </p>
+                              ) : (
+                                <div className="h-5 flex items-center">
+                                  <span className="text-sm text-[#9CA3AF]">无法访问论文，无法生成摘要</span>
+                                </div>
                               )}
                             </div>
                           </div>
-
-                          {/* 期刊信息行 */}
-                          {paper.venue && (
-                            <div className="flex items-center gap-2">
-                              <div className="text-[#9CA3AF]">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-                                </svg>
-                              </div>
-                              <span className="text-[13px] text-[#4B5563] leading-normal break-words line-clamp-1">{paper.venue}</span>
-                            </div>
-                          )}
-
-                          {/* 年份和关键词信息行 */}
-                          <div className="flex items-center gap-x-2 text-[13px] flex-wrap">
-                            <span className="text-[#6B7280]">{paper.year}</span>
-                            {paper.keywords && paper.keywords.length > 0 && (
-                              <>
-                                <span className="text-[#D1D5DB]">•</span>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {paper.keywords.map((keyword: string, index: number) => (
-                                    <span key={index} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs">
-                                      {keyword}
-                                    </span>
-                                  ))}
-                                </div>
-                              </>
-                            )}
-                            {paper.url && (
-                              <>
-                                <span className="text-[#D1D5DB]">•</span>
-                                <a 
-                                  href={paper.url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
-                                >
-                                  <ExternalLink size={12} />
-                                  <span>PDF</span>
-                                </a>
-                              </>
-                            )}
-                            <span className="text-[#D1D5DB]">•</span>
-                            <CitationButton paperId={paper.paperId} />
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                      {/* 右侧摘要 */}
-                      <div className="w-[450px] flex-shrink-0 text-sm text-[#4B5563] pl-4">
-                        {loadingSummaries[paper.paperId] ? (
-                          <div className="flex items-center gap-2 h-5">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                            <span className="text-xs text-[#6B7280]">生成摘要中...</span>
-                          </div>
-                        ) : summaries[paper.paperId] ? (
-                          <p className="text-[#4B5563] leading-relaxed text-[15px]">
-                            {summaries[paper.paperId]}
-                          </p>
-                        ) : (
-                          <div className="h-5 flex items-center">
-                            <span className="text-sm text-[#9CA3AF]">无法访问论文，无法生成摘要</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
