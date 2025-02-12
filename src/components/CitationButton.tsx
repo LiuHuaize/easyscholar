@@ -59,7 +59,7 @@ export default function CitationButton({ paperId }: CitationButtonProps) {
         className="flex items-center gap-1.5 text-[#087B7B] hover:text-[#065e5e] transition-colors"
       >
         <Quote className="w-4 h-4" />
-        <span className="text-sm">Cite</span>
+        <span className="text-sm">引用</span>
       </button>
 
       {isOpen && (
@@ -67,7 +67,7 @@ export default function CitationButton({ paperId }: CitationButtonProps) {
           <div className="bg-white rounded-xl shadow-lg w-full max-w-lg mx-4">
             {/* 弹出框标题 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h3 className="text-lg font-medium text-gray-900">Citation</h3>
+              <h3 className="text-lg font-medium text-gray-900">引用格式</h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -110,6 +110,7 @@ export default function CitationButton({ paperId }: CitationButtonProps) {
                 <button
                   onClick={handleCopy}
                   disabled={isLoading || !citation}
+                  title={copied ? "已复制" : "复制引用"}
                   className={
                     copied
                       ? "absolute top-2 right-2 p-1.5 rounded-md transition-colors bg-green-50 text-green-600"

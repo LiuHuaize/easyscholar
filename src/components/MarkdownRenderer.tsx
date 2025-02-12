@@ -22,14 +22,14 @@ const CitationPopup = ({ children, papers = [], ...props }: any) => {
   
   const handleClick = React.useCallback(() => {
     const element = document.getElementById(`paper-${paperId}`);
-    console.log('Trying to scroll to paper:', paperId);
-    console.log('Element found:', element);
+    console.log('正在尝试滚动到论文:', paperId);
+    console.log('找到元素:', element);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       element.classList.add('bg-green-50');
       setTimeout(() => element.classList.remove('bg-green-50'), 2000);
     } else {
-      console.warn('Paper element not found:', paperId);
+      console.warn('未找到论文元素:', paperId);
     }
   }, [paperId]);
 
@@ -54,10 +54,10 @@ const CitationPopup = ({ children, papers = [], ...props }: any) => {
             sideOffset={5}
           >
             <div className="flex flex-col gap-1">
-              <div className="font-medium text-gray-900">{paper ? paper.title : '点击查看引用详情'}</div>
+              <div className="font-medium text-gray-900">{paper ? paper.title : '点击查看论文详情'}</div>
               {paper && (
                 <div className="text-[13px] text-gray-500 flex items-center gap-1">
-                  <span>ID:</span>
+                  <span>论文ID:</span>
                   <span className="font-mono text-[12px] bg-gray-50 px-1.5 py-0.5 rounded">{paperId}</span>
                 </div>
               )}
@@ -82,9 +82,12 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, pap
         rehypePlugins={[rehypeRaw]}
         components={{
           cite: (props) => <CitationPopup {...props} papers={papers} />,
-          p: ({ children }) => <p className="mb-4">{children}</p>,
-          h2: ({ children }) => <h2 className="text-2xl font-bold mb-4 mt-6">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-xl font-bold mb-3 mt-5">{children}</h3>,
+          p: ({ children }) => <p className="mb-6 leading-7 text-gray-700 dark:text-gray-300">{children}</p>,
+          h1: ({ children }) => <h1 className="text-3xl font-bold mb-6 mt-8 text-gray-900 dark:text-gray-100">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-2xl font-bold mb-5 mt-7 text-gray-800 dark:text-gray-200">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-xl font-semibold mb-4 mt-6 text-gray-800 dark:text-gray-200">{children}</h3>,
+          ul: ({ children }) => <ul className="list-disc pl-6 mb-6 space-y-2">{children}</ul>,
+          li: ({ children }) => <li className="text-gray-700 dark:text-gray-300">{children}</li>,
         }}
       >
         {content}

@@ -39,17 +39,14 @@ ID: ${paper.paperId || '未知ID'}
       messages: [{
         role: "system",
         content: `You are a research assistant who needs to generate comprehensive insights based on the user's research questions and related paper information.
+最后输出用中文吧
+遵守这些规则
 
-Please strictly follow this format:
+需要根据用户的研究问题和相关论文信息生成综合洞察，
 
-1. Overview:
-   Briefly answer the user's question and provide an overall perspective.
+然后分点big tilte， subtilte 列出关键发现（每个观点需注明来源论文的引用格式）
 
-2. Key Findings:
-   Use Markdown format with level 2 (##) and level 3 (###) headings to organize content.
-   List key findings with main titles and subtitles.
-
-3. Citation Rules (This is crucial):
+Citation Rules (This is crucial):
    - Each point must include citations
    - Citation format examples:
      Single citation: This research found...<cite data-paper-id="ACTUAL_PAPER_ID">[1]</cite>
@@ -58,21 +55,22 @@ Please strictly follow this format:
    - Numbers must match the paper list order
 
 4. Summary:
-   Summarize main findings in one paragraph.
+   Summarize main findings in one paragraph.最后一段不用cite
 
 Format example:
+Overview....
 ## Main Findings
-### Finding One
+Finding One
 Research shows<cite data-paper-id="abc123">[1]</cite> in this field...
-### Finding Two
+Finding Two
 Multiple studies<cite data-paper-id="def456">[2]</cite><cite data-paper-id="ghi789">[3]</cite> confirm...
 
 Note: Ensure each cite tag is properly closed and data-paper-id uses the actual paper ID provided.`
       }, {
         role: "user",
-        content: `Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
+        content: `中文回答我吧：Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
       }],
-      temperature: 0.65,
+      temperature: 0.67,
       max_tokens: 2000
     });
 
