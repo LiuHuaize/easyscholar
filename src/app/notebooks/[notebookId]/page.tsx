@@ -16,6 +16,32 @@ export default function NotebooksPage() {
   const searchParams = useSearchParams()
   const isFirstRender = useRef(true)
 
+  const formatTitle = (title: string) => {
+    const maxCharsPerLine = 60; // 每行最大字符数
+    const words = title.split(/\s+/).filter(word => word.length > 0);
+    const lines: string[] = [];
+    let currentLine: string[] = [];
+    let currentLength = 0;
+    
+    for (const word of words) {
+      // 加1是为了计入空格
+      if (currentLength + word.length + 1 > maxCharsPerLine && currentLine.length > 0) {
+        lines.push(currentLine.join(' '));
+        currentLine = [word];
+        currentLength = word.length;
+      } else {
+        currentLine.push(word);
+        currentLength += (currentLine.length === 1 ? word.length : word.length + 1);
+      }
+    }
+    
+    if (currentLine.length > 0) {
+      lines.push(currentLine.join(' '));
+    }
+    
+    return lines.join('\n');
+  };
+
   const fetchSummary = async (paper: any) => {
     if (loadingSummaries[paper.paperId]) return;
     
@@ -130,12 +156,12 @@ export default function NotebooksPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                 placeholder="Search papers, authors, keywords..."
-                className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[15px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#087B7B]/20 focus:border-[#087B7B]"
+                className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#087B7B]/20 focus:border-[#087B7B]"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <Search className="w-5 h-5 stroke-[1.5]" />
               </div>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
                 Press Enter ↵
               </div>
             </div>
@@ -145,20 +171,20 @@ export default function NotebooksPage() {
         {/* 工具栏 */}
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
               <span>Sort: Most relevant</span>
               <ChevronDown size={14} />
             </button>
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
               <Filter size={14} />
               <span>Filters</span>
             </button>
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
+            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
               <Globe size={14} />
               <span>Translate</span>
             </button>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-[15px] text-gray-500">
             Found {totalResults.toLocaleString()} papers
           </div>
         </div>
@@ -174,7 +200,7 @@ export default function NotebooksPage() {
                 </div>
                 <div className="mt-6 flex flex-col items-center">
                   <h3 className="text-lg font-medium text-gray-900 mb-1">Searching papers...</h3>
-                  <p className="text-sm text-gray-500">This might take a few seconds</p>
+                  <p className="text-[15px] text-gray-500">This might take a few seconds</p>
                 </div>
               </div>
             ) : papers.length === 0 ? (
@@ -183,7 +209,7 @@ export default function NotebooksPage() {
                   <Search className="w-8 h-8 text-gray-300" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-1">No papers found</h3>
-                <p className="text-sm text-gray-500">Try adjusting your search or filters</p>
+                <p className="text-[15px] text-gray-500">Try adjusting your search or filters</p>
               </div>
             ) : (
               <>
@@ -198,10 +224,10 @@ export default function NotebooksPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium text-[#111827]">Paper</span>
+                    <span className="text-[15px] font-medium text-[#111827]">Paper</span>
                   </div>
                   <div className="w-[450px] flex-shrink-0">
-                    <span className="text-sm font-medium text-[#111827]">Abstract summary</span>
+                    <span className="text-[15px] font-medium text-[#111827]">Abstract summary</span>
                   </div>
                 </div>
 
@@ -217,18 +243,28 @@ export default function NotebooksPage() {
                                    hover:border-[#0F766E]/30 transition-colors cursor-pointer" 
                         />
                       </div>
-                      <div className="flex-1 min-w-0 pr-8">
+                      {/* 左侧论文信息 */}
+                      <div className="flex-1 min-w-0 pr-4 border-r border-[#E5E7EB]">
                         <div className="flex flex-col gap-3">
-                          <h3 className="text-base font-medium text-[#111827] leading-normal mb-1.5">
-                            <a 
-                              href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-[#087B7B] transition-colors"
-                            >
-                              {paper.title}
-                            </a>
-                          </h3>
+                          <div className="mb-1.5">
+                            <h3 className="text-[15px] font-medium text-[#111827]">
+                              <a 
+                                href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-[#087B7B] transition-colors whitespace-pre-line break-words block"
+                                style={{ 
+                                  lineHeight: '1.75rem',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: '3',
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden'
+                                }}
+                              >
+                                {formatTitle(paper.title)}
+                              </a>
+                            </h3>
+                          </div>
                           
                           {/* 作者信息行 */}
                           <div className="flex items-center gap-2">
@@ -254,7 +290,7 @@ export default function NotebooksPage() {
                                   <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
                                 </svg>
                               </div>
-                              <span className="text-[13px] text-[#4B5563] leading-normal break-words">{paper.venue}</span>
+                              <span className="text-[13px] text-[#4B5563] leading-normal break-words line-clamp-1">{paper.venue}</span>
                             </div>
                           )}
 
@@ -292,14 +328,15 @@ export default function NotebooksPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="w-[450px] flex-shrink-0 text-sm text-[#4B5563]">
+                      {/* 右侧摘要 */}
+                      <div className="w-[450px] flex-shrink-0 text-sm text-[#4B5563] pl-4">
                         {loadingSummaries[paper.paperId] ? (
                           <div className="flex items-center gap-2 h-5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
                             <span className="text-xs text-[#6B7280]">Generating summary...</span>
                           </div>
                         ) : summaries[paper.paperId] ? (
-                          <p className="text-[#4B5563] leading-normal">
+                          <p className="text-[#4B5563] leading-relaxed text-[15px]">
                             {summaries[paper.paperId]}
                           </p>
                         ) : (
