@@ -5,11 +5,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import CitationButton from '@/components/CitationButton'
+import { MarkdownRenderer } from '@/components/MarkdownRenderer'
+import { Paper, MarkdownComponentProps } from '@/app/types/types'
 
 export default function NotebooksPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchDisabled, setIsSearchDisabled] = useState(false)
-  const [papers, setPapers] = useState<any[]>([])
+  const [papers, setPapers] = useState<Paper[]>([])
   const [summaries, setSummaries] = useState<{[key: string]: string}>({})
   const [loadingSummaries, setLoadingSummaries] = useState<{[key: string]: boolean}>({})
   const [totalResults, setTotalResults] = useState(0)
@@ -201,7 +203,7 @@ export default function NotebooksPage() {
           }));
 
           // 获取摘要
-          await Promise.all(transformedPapers.map(paper => {
+          await Promise.all(transformedPapers.map((paper: Paper) => {
             if (!paper.abstract) {
               setSummaries(prev => ({
                 ...prev,
@@ -311,7 +313,7 @@ export default function NotebooksPage() {
 
         {/* Insight 区域 - 移到搜索结果上方 */}
         {(insightContent || insightLoading || (keywords.length > 0 && !isLoading)) && (
-          <div className="my-6 p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
+          <div className="my-6 max-w-[900px] mx-auto p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
                 <path d="M12 2v8"/>
@@ -323,8 +325,8 @@ export default function NotebooksPage() {
               <h3 className="text-lg font-medium text-[#111827]">研究洞察</h3>
             </div>
             {insightContent ? (
-              <div className="text-[#4B5563] leading-relaxed whitespace-pre-line">
-                {insightContent}
+              <div className="text-[#4B5563] leading-relaxed">
+                <MarkdownRenderer content={insightContent} papers={papers} />
               </div>
             ) : insightLoading ? (
               <div className="flex items-center gap-3 text-[#087B7B]">
