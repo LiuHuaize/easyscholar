@@ -82,11 +82,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, pap
         rehypePlugins={[rehypeRaw]}
         components={{
           cite: (props) => <CitationPopup {...props} papers={papers} />,
-          p: ({ children }) => <p className="mb-6 leading-7 text-gray-700 dark:text-gray-300">{children}</p>,
-          h1: ({ children }) => <h1 className="text-3xl font-bold mb-6 mt-8 text-gray-900 dark:text-gray-100">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-2xl font-bold mb-5 mt-7 text-gray-800 dark:text-gray-200">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-xl font-semibold mb-4 mt-6 text-gray-800 dark:text-gray-200">{children}</h3>,
-          ul: ({ children }) => <ul className="list-disc pl-6 mb-6 space-y-2">{children}</ul>,
+          p: ({ children }) => <p className="mb-4 leading-7 text-gray-700 dark:text-gray-300">{children}</p>,
+          h1: ({ children }) => <h1 className="text-xl font-bold mb-4 mt-6 text-gray-900 dark:text-gray-100">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-lg font-bold mb-3 mt-5 text-gray-800 dark:text-gray-200">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-base font-semibold mb-3 mt-4 text-gray-800 dark:text-gray-200">{children}</h3>,
+          ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>,
           li: ({ children }) => <li className="text-gray-700 dark:text-gray-300">{children}</li>,
         }}
       >

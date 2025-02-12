@@ -7,6 +7,8 @@ import Navbar from '@/components/Navbar'
 import CitationButton from '@/components/CitationButton'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { Paper, MarkdownComponentProps } from '@/app/types/types'
+import { TranslateToggle } from '@/components/TranslateToggle'
+import { translationCache } from '@/lib/translationCache'
 
 export default function NotebooksPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -22,6 +24,9 @@ export default function NotebooksPage() {
   const [loadingKeywords, setLoadingKeywords] = useState<{[key: string]: boolean}>({})
   const [insightContent, setInsightContent] = useState('')
   const [insightLoading, setInsightLoading] = useState(false)
+  const [isGlobalTranslated, setIsGlobalTranslated] = useState(false)
+  const [isGlobalTranslating, setIsGlobalTranslating] = useState(false)
+  const [translations, setTranslations] = useState<{[key: string]: string}>({})
   const searchParams = useSearchParams()
   const isFirstRender = useRef(true)
 
@@ -117,6 +122,24 @@ export default function NotebooksPage() {
     }
   };
 
+  // 添加超时控制函数
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 30000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(id);
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      throw error;
+    }
+  };
+
   const handleSearch = async (query: string) => {
     if (!query || isSearchDisabled) return
     try {
@@ -160,7 +183,13 @@ export default function NotebooksPage() {
         try {
           const searchType = localStorage.getItem('notebookSearchType') || 'papers';
           const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
-          const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
+          
+          // 使用带超时的fetch
+          const response = await fetchWithTimeout(
+            `${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`,
+            {},
+            30000 // 30秒超时
+          );
           
           if (!response.ok) throw new Error(`关键词搜索失败: ${keyword}`);
           const data = await response.json();
@@ -196,40 +225,47 @@ export default function NotebooksPage() {
             return newPapers;
           });
 
-          // 更新该关键词的加载状态为false
+        } catch (error) {
+          console.error(`关键词 ${keyword} 搜索出错:`, error);
+          // 如果是超时错误,显示特定提示
+          const errorMessage = error instanceof Error && error.name === 'AbortError' 
+            ? '搜索超时' 
+            : '搜索失败';
+            
+          setKeywordResults(prev => ({
+            ...prev,
+            [keyword]: []
+          }));
+        } finally {
+          // 无论成功失败都更新加载状态
           setLoadingKeywords(prev => ({
             ...prev,
             [keyword]: false
           }));
 
-          // 获取摘要
-          await Promise.all(transformedPapers.map((paper: Paper) => {
-            if (!paper.abstract) {
-              setSummaries(prev => ({
-                ...prev,
-                [paper.paperId]: "未提供摘要"
-              }));
-              return Promise.resolve();
-            }
-            return fetchSummary(paper);
-          }));
-        } catch (error) {
-          console.error(`关键词 ${keyword} 搜索出错:`, error);
-          setKeywordResults(prev => ({
-            ...prev,
-            [keyword]: []
-          }));
-          setLoadingKeywords(prev => ({
-            ...prev,
-            [keyword]: false
-          }));
+          // 获取当前关键词的论文
+          const currentPapers = keywordResults[keyword] || [];
+          
+          // 如果有论文,则获取摘要
+          if (currentPapers.length > 0) {
+            await Promise.all(currentPapers.map((paper: Paper) => {
+              if (!paper.abstract) {
+                setSummaries(prev => ({
+                  ...prev,
+                  [paper.paperId]: "未提供摘要"
+                }));
+                return Promise.resolve();
+              }
+              return fetchSummary(paper);
+            }));
+          }
         }
       });
 
       // 等待所有搜索完成
       await Promise.all(searchPromises);
       
-      // 在所有论文加载完成后生成Insight
+      // 在所有论文加载完成后生成Insight,即使某些关键词搜索失败也继续生成
       if (allPapers.length > 0) {
         await generateInsight(query, allPapers);
       }
@@ -260,6 +296,72 @@ export default function NotebooksPage() {
     }
   }, []); // 空依赖数组确保只执行一次
 
+  useEffect(() => {
+    const translateAll = async () => {
+      if (!isGlobalTranslated || papers.length === 0) return;
+      
+      setIsGlobalTranslating(true);
+      try {
+        // 收集所有需要翻译的文本
+        const textsToTranslate = papers.map(paper => ({
+          id: paper.paperId,
+          title: paper.title,
+          abstract: summaries[paper.paperId] || ''
+        }));
+
+        // 并行处理所有翻译请求
+        const translationPromises = textsToTranslate.map(async ({ id, title, abstract }) => {
+          // 检查缓存
+          const cachedTitle = translationCache.getTranslation(title);
+          const cachedAbstract = translationCache.getTranslation(abstract);
+
+          // 如果没有缓存,则调用API
+          const [translatedTitle, translatedAbstract] = await Promise.all([
+            cachedTitle || fetch('/api/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: title })
+            }).then(res => res.json()).then(data => {
+              translationCache.setTranslation(title, data.translation);
+              return data.translation;
+            }),
+            cachedAbstract || fetch('/api/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: abstract })
+            }).then(res => res.json()).then(data => {
+              translationCache.setTranslation(abstract, data.translation);
+              return data.translation;
+            })
+          ]);
+
+          return {
+            id,
+            title: translatedTitle || title,
+            abstract: translatedAbstract || abstract
+          };
+        });
+
+        const results = await Promise.all(translationPromises);
+        
+        // 更新翻译状态
+        const newTranslations = results.reduce((acc, { id, title, abstract }) => {
+          acc[`title-${id}`] = title;
+          acc[`abstract-${id}`] = abstract;
+          return acc;
+        }, {} as {[key: string]: string});
+
+        setTranslations(newTranslations);
+      } catch (error) {
+        console.error('Global translation error:', error);
+      } finally {
+        setIsGlobalTranslating(false);
+      }
+    };
+
+    translateAll();
+  }, [isGlobalTranslated, papers, summaries]);
+
   return (
     <div className="min-h-screen bg-[#FAFBFC]">
       <Navbar />
@@ -287,7 +389,7 @@ export default function NotebooksPage() {
               </div>
               {!isSearchDisabled && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
-                  Press Enter ↵
+                  按回车键 ↵
                 </div>
               )}
             </div>
@@ -351,21 +453,45 @@ export default function NotebooksPage() {
         {/* 工具栏 */}
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
-              <span>Sort: Most relevant</span>
-              <ChevronDown size={14} />
+            <button 
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
+              disabled
+            >
+              <div className="flex items-center gap-2">
+                <span>排序: 最相关</span>
+                <ChevronDown size={14} />
+                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+              </div>
             </button>
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
-              <Filter size={14} />
-              <span>Filters</span>
+            <button 
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
+              disabled
+            >
+              <div className="flex items-center gap-2">
+                <Filter size={14} />
+                <span>筛选</span>
+                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+              </div>
             </button>
-            <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors">
-              <Globe size={14} />
-              <span>Translate</span>
+            <button 
+              onClick={() => setIsGlobalTranslated(!isGlobalTranslated)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] ${isGlobalTranslated ? 'bg-[#087B7B] text-white' : 'text-gray-600 hover:bg-gray-50'} rounded-md transition-colors`}
+            >
+              {isGlobalTranslating ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>翻译中...</span>
+                </>
+              ) : (
+                <>
+                  <Globe size={14} />
+                  <span>{isGlobalTranslated ? '查看原文' : '翻译全文'}</span>
+                </>
+              )}
             </button>
           </div>
           <div className="text-[15px] text-gray-500">
-            Found {totalResults.toLocaleString()} papers
+            共找到 {totalResults.toLocaleString()} 篇论文
           </div>
         </div>
 
@@ -416,10 +542,10 @@ export default function NotebooksPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[15px] font-medium text-[#111827]">Paper</span>
+                    <span className="text-[15px] font-medium text-[#111827]">论文</span>
                   </div>
                   <div className="w-[450px] flex-shrink-0">
-                    <span className="text-[15px] font-medium text-[#111827]">Abstract summary</span>
+                    <span className="text-[15px] font-medium text-[#111827]">摘要总结</span>
                   </div>
                 </div>
 
@@ -482,21 +608,9 @@ export default function NotebooksPage() {
                                 <div className="flex flex-col gap-3">
                                   <div className="mb-1.5">
                                     <h3 className="text-[15px] font-medium text-[#111827]">
-                                      <a 
-                                        href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="hover:text-[#087B7B] transition-colors whitespace-pre-line break-words block"
-                                        style={{ 
-                                          lineHeight: '1.75rem',
-                                          display: '-webkit-box',
-                                          WebkitLineClamp: '3',
-                                          WebkitBoxOrient: 'vertical',
-                                          overflow: 'hidden'
-                                        }}
-                                      >
-                                        {formatTitle(paper.title)}
-                                      </a>
+                                      <div className="hover:text-[#087B7B] transition-colors whitespace-pre-line break-words block">
+                                        {isGlobalTranslated ? translations[`title-${paper.paperId}`] || formatTitle(paper.title) : formatTitle(paper.title)}
+                                      </div>
                                     </h3>
                                   </div>
                                   
@@ -570,9 +684,9 @@ export default function NotebooksPage() {
                                     <span className="text-xs text-[#6B7280]">生成摘要中...</span>
                                   </div>
                                 ) : summaries[paper.paperId] ? (
-                                  <p className="text-[#4B5563] leading-relaxed text-[15px]">
-                                    {summaries[paper.paperId]}
-                                  </p>
+                                  <div className="text-[#4B5563] leading-relaxed text-[15px]">
+                                    {isGlobalTranslated ? translations[`abstract-${paper.paperId}`] || summaries[paper.paperId] : summaries[paper.paperId]}
+                                  </div>
                                 ) : (
                                   <div className="h-5 flex items-center">
                                     <span className="text-sm text-[#9CA3AF]">无法访问论文，无法生成摘要</span>
