@@ -47,7 +47,9 @@ export default function NotebooksPage() {
     if (!query) return
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/semanticsearch?query=${encodeURIComponent(query)}&limit=10&offset=0`)
+      const searchType = localStorage.getItem('notebookSearchType') || 'papers';
+      const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
+      const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(query)}&limit=10&offset=0`)
 
       if (!response.ok) throw new Error('Search failed')
       const data = await response.json()
@@ -60,7 +62,7 @@ export default function NotebooksPage() {
         abstract: paper.abstract,
         year: paper.year,
         venue: paper.journal,
-        citationCount: 'N/A',  // Semantic Scholar API 没有返回引用数
+        citationCount: 'N/A',
         url: paper.openAccessPdf,
         keywords: paper.keywords
       }))
@@ -86,8 +88,9 @@ export default function NotebooksPage() {
       if (savedQuery) {
         setSearchQuery(savedQuery);
         handleSearch(savedQuery);
-        // 清除存储的搜索文本
+        // 清除存储的搜索文本和类型
         localStorage.removeItem('notebookSearchQuery');
+        localStorage.removeItem('notebookSearchType');
       } else {
         // 只有在没有savedQuery时才设置isLoading为false
         setIsLoading(false);

@@ -22,8 +22,9 @@ export default function Home() {
   const handleSearchOptionClick = (type: SearchOptionType) => {
     setIsLoading(true);
     const notebookId = uuidv4();
-    // 保存搜索文本到localStorage
+    // 保存搜索文本和类型到localStorage
     localStorage.setItem('notebookSearchQuery', searchText);
+    localStorage.setItem('notebookSearchType', type);
     router.push(`/notebooks/${notebookId}`);
   };
 
