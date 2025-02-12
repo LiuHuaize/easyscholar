@@ -24,7 +24,8 @@ export async function POST(request: Request) {
 我是一个科普文章作家，每篇科普文章创作都会根据文章主题查询相关论文，再将论文中的内容整理给读者。
 
 # 任务：
-我将告诉你我的文章选题，请你根据我的选题帮助我想出适合去各大论文网站上搜索的论文关键词,其中有一到两个关键词必须是和用户提示基本一样，不要延伸的。
+我将告诉你我的文章选题，请你根据我的选题帮助我想出适合去各大论文网站上搜索的论文关键词,其中有两到三个关键词必须是和用户提示非常相关，基本一样的。
+假如包含特定人物，地点，我们需要在每个关键词后面加上这个人物或者地点。
 
 
 # 示例：
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
 输入：如何养成好习惯？
 输出：Habit Formation，Behavioral Change，Self-Improvement，Goal Setting，Willpower and Self-Control
 "
-
+输入：what is the economic future for hongkong
+输出：Hong Kong Economy，Hong Kong Economic Development，Hong Kong Economic Policy，Hong Kong Economic Growth，Hong Kong Economic Challenges
 # 要求：
 除了搜索关键词，请你不要输出任何东西。`
       }, {

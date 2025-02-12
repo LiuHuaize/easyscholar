@@ -13,6 +13,7 @@ export default function NotebooksPage() {
   const [loadingSummaries, setLoadingSummaries] = useState<{[key: string]: boolean}>({})
   const [totalResults, setTotalResults] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false)
   const [keywords, setKeywords] = useState<string[]>([])
   const [keywordResults, setKeywordResults] = useState<{[key: string]: any[]}>({})
   const searchParams = useSearchParams()
@@ -84,8 +85,10 @@ export default function NotebooksPage() {
     if (!query) return
     try {
       setIsLoading(true)
+      setIsGeneratingKeywords(true)
       setKeywords([])
       setKeywordResults({})
+      setPapers([])
       
       // 生成关键词
       const keywordsRes = await fetch('/api/generate-keywords', {
@@ -97,62 +100,79 @@ export default function NotebooksPage() {
       if (!keywordsRes.ok) throw new Error('Failed to generate keywords');
       const { keywords: generatedKeywords } = await keywordsRes.json();
       setKeywords(generatedKeywords);
+      setIsGeneratingKeywords(false)
+      setIsLoading(false) // 生成完关键词就关闭加载状态
 
-      // 并行搜索每个关键词
+      // 为每个关键词并行搜索并更新结果
       const searchType = localStorage.getItem('notebookSearchType') || 'papers';
       const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
       
-      const searchPromises = generatedKeywords.map(async (keyword: string) => {
-        const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
-        if (!response.ok) throw new Error(`Search failed for keyword: ${keyword}`);
-        const data = await response.json();
-        return { keyword, data };
-      });
+      // 创建一个Map来存储已经显示的论文ID，避免重复
+      const displayedPaperIds = new Set();
+      
+      // 并行处理每个关键词的搜索，但逐个更新UI
+      generatedKeywords.forEach(async (keyword: string) => {
+        try {
+          const response = await fetch(`${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`);
+          if (!response.ok) throw new Error(`Search failed for keyword: ${keyword}`);
+          const data = await response.json();
+          
+          const transformedPapers = data.articles
+            .map((paper: any) => ({
+              paperId: paper.id,
+              title: paper.title,
+              authors: paper.authors.map((name: string) => ({ name })),
+              abstract: paper.abstract,
+              year: paper.year,
+              venue: paper.journal,
+              citationCount: 'N/A',
+              url: paper.openAccessPdf,
+              keywords: paper.keywords,
+              searchKeyword: keyword
+            }))
+            .filter((paper: any) => !displayedPaperIds.has(paper.paperId)); // 过滤掉已显示的论文
 
-      const results = await Promise.all(searchPromises);
-      
-      // 处理每个关键词的结果
-      const newKeywordResults: {[key: string]: any[]} = {};
-      const allPapers: any[] = [];
-      
-      results.forEach(({ keyword, data }) => {
-        const transformedPapers = data.articles.map((paper: any) => ({
-          paperId: paper.id,
-          title: paper.title,
-          authors: paper.authors.map((name: string) => ({ name })),
-          abstract: paper.abstract,
-          year: paper.year,
-          venue: paper.journal,
-          citationCount: 'N/A',
-          url: paper.openAccessPdf,
-          keywords: paper.keywords,
-          searchKeyword: keyword // 添加搜索关键词标记
-        }));
-        
-        newKeywordResults[keyword] = transformedPapers;
-        allPapers.push(...transformedPapers);
-      });
+          // 更新已显示论文ID集合
+          transformedPapers.forEach((paper: any) => {
+            displayedPaperIds.add(paper.paperId);
+          });
 
-      setKeywordResults(newKeywordResults);
-      setPapers(allPapers);
-      setTotalResults(allPapers.length);
-      
-      // 获取摘要
-      allPapers.forEach((paper: any) => {
-        if (!paper.abstract) {
-          setSummaries(prev => ({
+          // 立即更新UI显示新的论文
+          setKeywordResults(prev => ({
             ...prev,
-            [paper.paperId]: "No abstract provided"
+            [keyword]: transformedPapers
           }));
-        } else {
-          fetchSummary(paper);
+
+          setPapers(prev => {
+            const newPapers = [...prev, ...transformedPapers];
+            setTotalResults(newPapers.length); // 使用实际的papers数组长度
+            return newPapers;
+          });
+
+          // 异步获取摘要
+          transformedPapers.forEach((paper: any) => {
+            if (!paper.abstract) {
+              setSummaries(prev => ({
+                ...prev,
+                [paper.paperId]: "No abstract provided"
+              }));
+            } else {
+              fetchSummary(paper);
+            }
+          });
+        } catch (error) {
+          console.error(`Search error for keyword ${keyword}:`, error);
+          setKeywordResults(prev => ({
+            ...prev,
+            [keyword]: []
+          }));
         }
       });
       
     } catch (error) {
       console.error('Search error:', error)
-    } finally {
       setIsLoading(false)
+      setIsGeneratingKeywords(false)
     }
   }
 
@@ -249,17 +269,29 @@ export default function NotebooksPage() {
                   <div className="w-16 h-16 border-4 border-[#087B7B] rounded-full animate-spin border-t-transparent absolute top-0 left-0"></div>
                 </div>
                 <div className="mt-6 flex flex-col items-center">
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">Searching papers...</h3>
-                  <p className="text-[15px] text-gray-500">This might take a few seconds</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                    {isGeneratingKeywords ? "生成搜索关键词..." : "搜索相关论文..."}
+                  </h3>
+                  <p className="text-[15px] text-gray-500">
+                    {isGeneratingKeywords ? "AI正在分析您的问题" : "这可能需要几秒钟时间"}
+                  </p>
                 </div>
+              </div>
+            ) : papers.length === 0 && keywords.length > 0 ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                  <Search className="w-8 h-8 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">正在搜索论文...</h3>
+                <p className="text-[15px] text-gray-500">请稍候，论文将逐步显示</p>
               </div>
             ) : papers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                   <Search className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No papers found</h3>
-                <p className="text-[15px] text-gray-500">Try adjusting your search or filters</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">输入您的研究问题</h3>
+                <p className="text-[15px] text-gray-500">AI将帮您找到相关论文</p>
               </div>
             ) : (
               <>
@@ -284,7 +316,7 @@ export default function NotebooksPage() {
                 {/* 论文列表内容 */}
                 <div className="divide-y divide-[#F3F4F6]">
                   {papers.map((paper: any) => (
-                    <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group">
+                    <div key={paper.paperId} className="flex items-start p-6 hover:bg-[#F9FAFB] transition-colors group animate-fadeIn">
                       <div className="w-6 mt-[3px]">
                         <input 
                           type="checkbox" 
@@ -383,7 +415,7 @@ export default function NotebooksPage() {
                         {loadingSummaries[paper.paperId] ? (
                           <div className="flex items-center gap-2 h-5">
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                            <span className="text-xs text-[#6B7280]">Generating summary...</span>
+                            <span className="text-xs text-[#6B7280]">生成摘要中...</span>
                           </div>
                         ) : summaries[paper.paperId] ? (
                           <p className="text-[#4B5563] leading-relaxed text-[15px]">
@@ -391,7 +423,7 @@ export default function NotebooksPage() {
                           </p>
                         ) : (
                           <div className="h-5 flex items-center">
-                            <span className="text-sm text-[#9CA3AF]">Cannot access the paper, unable to summarize</span>
+                            <span className="text-sm text-[#9CA3AF]">无法访问论文，无法生成摘要</span>
                           </div>
                         )}
                       </div>
