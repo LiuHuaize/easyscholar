@@ -99,7 +99,7 @@ export async function GET(request: Request) {
             id: item.paperId,
             title: item.title,
             authors: item.authors.map(author => author.name),
-            abstract: item.abstract || 'No abstract available',
+            abstract: item.abstract || '',
             year: item.year || 'N/A',
             journal: item.venue || 'Unknown',
             keywords: item.s2FieldsOfStudy?.map(field => field.category) || [],

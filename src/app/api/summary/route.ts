@@ -34,7 +34,11 @@ export async function POST(request: Request) {
 
     const summaryPromises = papers.map(async (paper) => {
       if (!paper.abstract) {
-        return { id: paper.paperId, summary: null };
+        return { 
+          id: paper.paperId, 
+          summary: "No abstract provided",
+          error: null 
+        };
       }
 
       try {
@@ -43,16 +47,16 @@ export async function POST(request: Request) {
           messages: [
             {
               role: "system",
-              content: `Summarize academic paper abstracts in one concise, natural fluent sentence (maximum 200 characters).
+              content: `Summarize academic paper abstracts in one concise, natural fluent sentence (maximum 300 characters).
 Focus on the key methodology and main finding only. Be direct, specific and friendly.`
             },
             {
               role: "user",
-              content: `Please provide a summary (max 200 chars):\n\n${paper.abstract}`
+              content: `Please provide a summary (max 300 chars):\n\n${paper.abstract}`
             }
           ],
           temperature: 0.3,
-          max_tokens: 280,
+          max_tokens: 380,
           presence_penalty: 0.1,
           frequency_penalty: 0.1
         });

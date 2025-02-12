@@ -17,31 +17,40 @@ export default function NotebooksPage() {
   const isFirstRender = useRef(true)
 
   const fetchSummary = async (paper: any) => {
-    if (!paper.abstract || loadingSummaries[paper.paperId]) return
+    if (loadingSummaries[paper.paperId]) return;
     
     try {
-      setLoadingSummaries(prev => ({ ...prev, [paper.paperId]: true }))
+      setLoadingSummaries(prev => ({ ...prev, [paper.paperId]: true }));
       const response = await fetch('/api/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ papers: [paper] }),
-      })
+      });
 
-      if (!response.ok) throw new Error('Failed to fetch summary')
-      const data = await response.json()
+      if (!response.ok) throw new Error('Failed to fetch summary');
+      const data = await response.json();
       
       if (data.summaries?.[0]?.summary) {
         setSummaries(prev => ({
           ...prev,
           [paper.paperId]: data.summaries[0].summary
-        }))
+        }));
+      } else if (data.summaries?.[0]?.error) {
+        setSummaries(prev => ({
+          ...prev,
+          [paper.paperId]: "Error generating summary"
+        }));
       }
     } catch (error) {
-      console.error('Summary error:', error)
+      console.error('Summary error:', error);
+      setSummaries(prev => ({
+        ...prev,
+        [paper.paperId]: "Error generating summary"
+      }));
     } finally {
-      setLoadingSummaries(prev => ({ ...prev, [paper.paperId]: false }))
+      setLoadingSummaries(prev => ({ ...prev, [paper.paperId]: false }));
     }
-  }
+  };
 
   const handleSearch = async (query: string) => {
     if (!query) return
@@ -70,9 +79,16 @@ export default function NotebooksPage() {
       setPapers(transformedPapers)
       setTotalResults(data.articles.length)
       
-      // 搜索完成后，为每篇论文异步获取摘要
+      // 搜索完成后，只为有摘要的论文获取摘要
       transformedPapers.forEach((paper: any) => {
-        fetchSummary(paper)
+        if (!paper.abstract) {
+          setSummaries(prev => ({
+            ...prev,
+            [paper.paperId]: "No abstract provided"
+          }));
+        } else {
+          fetchSummary(paper);
+        }
       })
     } catch (error) {
       console.error('Search error:', error)
@@ -203,9 +219,15 @@ export default function NotebooksPage() {
                       </div>
                       <div className="flex-1 min-w-0 pr-8">
                         <div className="flex flex-col gap-3">
-                          <h3 className="text-[14px] font-medium text-[#111827] leading-normal 
-                                     hover:text-[#087B7B] cursor-pointer transition-colors">
-                            {paper.title}
+                          <h3 className="text-base font-medium text-[#111827] leading-normal mb-1.5">
+                            <a 
+                              href={`https://www.semanticscholar.org/paper/${paper.paperId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[#087B7B] transition-colors"
+                            >
+                              {paper.title}
+                            </a>
                           </h3>
                           
                           {/* 作者信息行 */}
