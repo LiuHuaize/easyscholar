@@ -22,7 +22,9 @@ export default function Home() {
   const handleSearchOptionClick = (type: SearchOptionType) => {
     setIsLoading(true);
     const notebookId = uuidv4();
-    router.push(`/notebooks/${notebookId}?type=${type}`);
+    // 保存搜索文本到localStorage
+    localStorage.setItem('notebookSearchQuery', searchText);
+    router.push(`/notebooks/${notebookId}`);
   };
 
   // 处理回车键

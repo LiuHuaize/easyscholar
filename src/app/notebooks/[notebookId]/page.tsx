@@ -80,12 +80,21 @@ export default function NotebooksPage() {
   }
 
   useEffect(() => {
-    const query = searchParams.get('q')
-    if (query) {
-      setSearchQuery(query)
+    // 从localStorage获取搜索文本
+    if (typeof window !== 'undefined' && isFirstRender.current) {
+      const savedQuery = localStorage.getItem('notebookSearchQuery');
+      if (savedQuery) {
+        setSearchQuery(savedQuery);
+        handleSearch(savedQuery);
+        // 清除存储的搜索文本
+        localStorage.removeItem('notebookSearchQuery');
+      } else {
+        // 只有在没有savedQuery时才设置isLoading为false
+        setIsLoading(false);
+      }
+      isFirstRender.current = false;
     }
-    setIsLoading(false)
-  }, [searchParams])
+  }, []); // 空依赖数组确保只执行一次
 
   return (
     <div className="min-h-screen bg-[#FAFBFC]">
