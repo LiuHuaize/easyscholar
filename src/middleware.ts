@@ -1,28 +1,8 @@
 // 从 Clerk 的服务端工具包中导入必要的函数
-// clerkMiddleware: 用于处理用户认证的中间件
-// createRouteMatcher: 用于创建路由匹配器，判断哪些路由可以公开访问
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-
-// 定义公开路由（不需要登录就能访问的页面）
-// '/sign-in(.*)': 所有以 /sign-in 开头的路径，(.*)表示后面可以跟任何字符
-// '/sign-up(.*)': 所有以 /sign-up 开头的路径
-// '/': 网站的首页
-const isPublicRoute = createRouteMatcher([
-  '/sign-in(.*)', 
-  '/sign-up(.*)',
-  '/'
-])
+import { clerkMiddleware } from '@clerk/nextjs/server'
 
 // 创建并导出中间件函数
-// 中间件会在每个页面请求之前运行，用于检查用户是否有权限访问该页面
-export default clerkMiddleware(async (auth, request) => {
-  // 如果请求的不是公开路由
-  if (!isPublicRoute(request)) {
-    // 则要求用户必须登录才能访问
-    // 如果用户未登录，会自动重定向到登录页面
-    await auth.protect()
-  }
-})
+export default clerkMiddleware()
 
 // 配置中间件的运行规则
 export const config = {

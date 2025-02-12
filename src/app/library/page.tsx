@@ -1,12 +1,9 @@
 'use client';
 
-import { useAuth } from "@clerk/nextjs";
 import { BookmarkIcon, ArrowUpTrayIcon, FolderIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/Navbar";
 
 export default function Library() {
-  const { userId } = useAuth();
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

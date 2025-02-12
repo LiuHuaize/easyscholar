@@ -1,9 +1,7 @@
 'use client';
 
-import { UserButton, SignInButton } from "@clerk/nextjs";
 import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,7 +9,6 @@ import { v4 as uuidv4 } from 'uuid';
 type SearchOptionType = 'papers' | 'web';
 
 export default function Home() {
-  const { userId } = useAuth();
   const router = useRouter();
   const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -71,15 +68,6 @@ export default function Home() {
           <button className="text-sm text-gray-600 hover:text-gray-900">
             帮助
           </button>
-          {userId ? (
-            <UserButton afterSignOutUrl="/" />
-          ) : (
-            <SignInButton mode="modal">
-              <button className="px-4 py-2 bg-[#087B7B] text-white text-sm rounded-lg hover:bg-[#076666] transition-colors">
-                登录
-              </button>
-            </SignInButton>
-          )}
         </div>
       </nav>
 

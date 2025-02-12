@@ -1,13 +1,10 @@
 'use client';
 
-import { UserButton, SignInButton } from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
 import { BookOpenIcon, BookmarkIcon } from "@heroicons/react/24/outline";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Navbar() {
-  const { userId } = useAuth();
   const pathname = usePathname();
 
   const isActivePath = (path: string) => pathname === path;
@@ -51,15 +48,6 @@ export default function Navbar() {
             >
               帮助
             </Link>
-            {userId ? (
-              <UserButton afterSignOutUrl="/" />
-            ) : (
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 bg-[#087B7B] text-white text-sm rounded-lg hover:bg-[#076666] transition-colors">
-                  登录
-                </button>
-              </SignInButton>
-            )}
           </div>
         </div>
       </div>

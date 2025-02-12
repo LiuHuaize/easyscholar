@@ -71,7 +71,7 @@ Note: Ensure each cite tag is properly closed and data-paper-id uses the actual 
         content: `中文回答我吧：Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
       }],
       temperature: 0.67,
-      max_tokens: 2000
+      max_tokens: 2500
     });
 
     return NextResponse.json({ insight: response.choices[0].message.content });
