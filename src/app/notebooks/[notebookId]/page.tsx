@@ -24,11 +24,16 @@ export default function NotebooksPage() {
   const [loadingKeywords, setLoadingKeywords] = useState<{[key: string]: boolean}>({})
   const [insightContent, setInsightContent] = useState('')
   const [insightLoading, setInsightLoading] = useState(false)
+  const [reasoningContent, setReasoningContent] = useState('')
+  const [isReasoningPhase, setIsReasoningPhase] = useState(true)
+  const [isReasoningExpanded, setIsReasoningExpanded] = useState(true)
   const [isGlobalTranslated, setIsGlobalTranslated] = useState(false)
   const [isGlobalTranslating, setIsGlobalTranslating] = useState(false)
   const [translations, setTranslations] = useState<{[key: string]: string}>({})
   const searchParams = useSearchParams()
   const isFirstRender = useRef(true)
+  const insightContainerRef = useRef<HTMLDivElement>(null)
+  const reasoningContainerRef = useRef<HTMLDivElement>(null)
 
   const formatTitle = (title: string) => {
     const maxCharsPerLine = 60; // 每行最大字符数
@@ -59,6 +64,10 @@ export default function NotebooksPage() {
   const generateInsight = async (query: string, papers: any[]) => {
     try {
       setInsightLoading(true);
+      setReasoningContent('');
+      setInsightContent('');
+      setIsReasoningPhase(true);
+      
       const validPapers = papers.filter(paper => 
         paper.abstract && paper.abstract !== "No abstract provided"
       );
@@ -79,9 +88,52 @@ export default function NotebooksPage() {
       });
 
       if (!response.ok) throw new Error('Failed to generate insight');
-      const { insight } = await response.json();
       
-      setInsightContent(insight);
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+
+      const decoder = new TextDecoder();
+      let currentContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (!line) continue;
+          try {
+            const data = JSON.parse(line);
+            if (data.type === 'reasoning') {
+              setReasoningContent(prev => {
+                const newContent = prev + data.content;
+                // 添加自动滚动
+                setTimeout(() => {
+                  if (reasoningContainerRef.current) {
+                    reasoningContainerRef.current.scrollTop = reasoningContainerRef.current.scrollHeight;
+                  }
+                }, 0);
+                return newContent;
+              });
+            } else if (data.type === 'content') {
+              currentContent += data.content;
+              setInsightContent(currentContent);
+              // 添加自动滚动
+              setTimeout(() => {
+                if (insightContainerRef.current) {
+                  insightContainerRef.current.scrollTop = insightContainerRef.current.scrollHeight;
+                }
+              }, 0);
+            } else if (data.type === 'phase_change') {
+              setIsReasoningPhase(false);
+            }
+          } catch (e) {
+            console.error('Error parsing chunk:', e);
+          }
+        }
+      }
     } catch (error) {
       console.error('Insight generation error:', error);
       const language = localStorage.getItem('notebookLanguage') || 'en';
@@ -406,7 +458,7 @@ export default function NotebooksPage() {
         )}
 
         {/* Insight 区域 - 移到搜索结果上方 */}
-        {(insightContent || insightLoading || (keywords.length > 0 && !isLoading)) && (
+        {(insightContent || insightLoading || reasoningContent || (keywords.length > 0 && !isLoading)) && (
           <div className="my-6 max-w-[900px] mx-auto p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
@@ -418,19 +470,71 @@ export default function NotebooksPage() {
               </svg>
               <h3 className="text-lg font-medium text-[#111827]">研究洞察</h3>
             </div>
+            
+            {/* 思考过程区域 */}
+            {reasoningContent && (
+              <div className="mb-4">
+                <div 
+                  className="flex items-center gap-2 mb-3 cursor-pointer" 
+                  onClick={() => setIsReasoningExpanded(!isReasoningExpanded)}
+                >
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F0F9F9] rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
+                      <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
+                      <path d="M8.5 8.5v.01"/>
+                      <path d="M16 15.5v.01"/>
+                      <path d="M12 12v.01"/>
+                      <path d="M11 17v.01"/>
+                      <path d="M7 14v.01"/>
+                    </svg>
+                    <span className="text-sm font-medium text-[#087B7B]">思考过程</span>
+                    <ChevronDown 
+                      size={14} 
+                      className={`text-[#087B7B] transform transition-transform duration-200 ${isReasoningExpanded ? '' : '-rotate-90'}`} 
+                    />
+                  </div>
+                  <div className="h-[1px] flex-1 bg-[#E5F2F2]"></div>
+                </div>
+                <div 
+                  className={`transition-all duration-300 ease-in-out ${isReasoningExpanded ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                >
+                  <div className="bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg">
+                    <div
+                      ref={reasoningContainerRef}
+                      className="text-sm text-[#4B5563] whitespace-pre-wrap p-4 overflow-y-auto"
+                      style={{ 
+                        maxHeight: '300px',
+                        scrollBehavior: 'smooth'
+                      }}
+                    >
+                      {reasoningContent}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* 最终洞察内容区域 */}
             {insightContent ? (
-              <div className="text-[#4B5563] leading-relaxed">
+              <div 
+                ref={insightContainerRef}
+                className="bg-white rounded-lg p-4 mt-4 shadow-md overflow-y-auto"
+                style={{ 
+                  maxHeight: '500px',
+                  scrollBehavior: 'smooth'
+                }}
+              >
                 <MarkdownRenderer content={insightContent} papers={papers} />
               </div>
             ) : insightLoading ? (
-              <div className="flex items-center gap-3 text-[#087B7B]">
+              <div className="flex items-center gap-3 text-[#087B7B] bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
                 <span>正在生成研究洞察...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-gray-500">
+              <div className="flex items-center gap-3 text-gray-500 bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="16" x2="12" y2="12"/>
@@ -445,29 +549,27 @@ export default function NotebooksPage() {
         {/* 工具栏 */}
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <button 
+            <div 
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
-              disabled
             >
               <div className="flex items-center gap-2">
                 <span>排序: 最相关</span>
                 <ChevronDown size={14} />
                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
               </div>
-            </button>
-            <button 
+            </div>
+            <div 
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
-              disabled
             >
               <div className="flex items-center gap-2">
                 <Filter size={14} />
                 <span>筛选</span>
                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
               </div>
-            </button>
-            <button 
+            </div>
+            <div 
               onClick={() => setIsGlobalTranslated(!isGlobalTranslated)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] ${isGlobalTranslated ? 'bg-[#087B7B] text-white' : 'text-gray-600 hover:bg-gray-50'} rounded-md transition-colors`}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] ${isGlobalTranslated ? 'bg-[#087B7B] text-white' : 'text-gray-600 hover:bg-gray-50'} rounded-md transition-colors cursor-pointer`}
             >
               {isGlobalTranslating ? (
                 <>
@@ -480,7 +582,7 @@ export default function NotebooksPage() {
                   <span>{isGlobalTranslated ? '查看原文' : '翻译全文'}</span>
                 </>
               )}
-            </button>
+            </div>
           </div>
           <div className="text-[15px] text-gray-500">
             共找到 {totalResults.toLocaleString()} 篇论文

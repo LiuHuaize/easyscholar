@@ -123,6 +123,34 @@ export default function Home() {
                       ref={searchOptionsRef}
                       className="absolute top-full right-0 mt-2 w-[280px] bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 z-50"
                     >
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">研究洞察语言</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setLanguage('zh')}
+                              className={`px-2.5 py-1 rounded-md text-sm transition-colors ${
+                                language === 'zh' 
+                                  ? 'bg-[#087B7B] text-white' 
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              中文
+                            </button>
+                            <button
+                              onClick={() => setLanguage('en')}
+                              className={`px-2.5 py-1 rounded-md text-sm transition-colors ${
+                                language === 'en' 
+                                  ? 'bg-[#087B7B] text-white' 
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              English
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
                       <button
                         onClick={() => handleSearchOptionClick('papers')}
                         className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group"
@@ -135,45 +163,6 @@ export default function Home() {
                           <div className="flex flex-col items-start">
                             <span className="text-sm font-medium text-gray-700">Semantic Scholar</span>
                             <span className="text-xs text-gray-500">查找研究论文和文章</span>
-                          </div>
-                          <div className="relative">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowLanguageOptions(!showLanguageOptions);
-                              }}
-                              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-                            >
-                              <LanguageIcon className="w-4 h-4 text-gray-500" />
-                            </button>
-                            
-                            {/* 语言选择弹出框 */}
-                            {showLanguageOptions && (
-                              <div 
-                                ref={languageOptionsRef}
-                                className="absolute right-0 top-full mt-1 w-[120px] bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button
-                                  onClick={() => {
-                                    setLanguage('en');
-                                    setShowLanguageOptions(false);
-                                  }}
-                                  className={`w-full px-3 py-1.5 text-left hover:bg-gray-50/80 transition-colors ${language === 'en' ? 'text-[#087B7B]' : 'text-gray-700'}`}
-                                >
-                                  <span className="text-sm">English</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setLanguage('zh');
-                                    setShowLanguageOptions(false);
-                                  }}
-                                  className={`w-full px-3 py-1.5 text-left hover:bg-gray-50/80 transition-colors ${language === 'zh' ? 'text-[#087B7B]' : 'text-gray-700'}`}
-                                >
-                                  <span className="text-sm">中文</span>
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </button>

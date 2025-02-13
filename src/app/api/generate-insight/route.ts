@@ -38,7 +38,7 @@ Abstract: ${paper.abstract || (language === 'zh' ? '无摘要' : 'No abstract')}
       ? `You are a research assistant who needs to generate comprehensive insights based on the user's research questions and related paper information.
 需要根据用户的研究问题和相关论文信息生成综合洞察，用中文输出。
 
-然后分点big tilte， subtilte 列出关键发现（每个观点需注明来源论文的引用格式）
+然后分点big tilte， subtilte 希望你可以整理出逻辑，而不是简单的列出发现（每个观点需注明来源论文的引用格式）
 
 Citation Rules (This is crucial):
    - Each point must include citations
@@ -82,20 +82,70 @@ Research shows<cite data-paper-id="abc123">[1]</cite> in this field...
 Finding Two
 Multiple studies<cite data-paper-id="def456">[2]</cite><cite data-paper-id="ghi789">[3]</cite> confirm...`;
 
-    const response = await client.chat.completions.create({
-      model: "ep-20250213235903-c2gxm",
-      messages: [{
-        role: "system",
-        content: systemPrompt
-      }, {
-        role: "user",
-        content: `Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
-      }],
-      temperature: 0.7,
-      max_tokens: 2600
+    // 创建一个新的 ReadableStream
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const response = await client.chat.completions.create({
+            model: "ep-20250213235903-c2gxm",
+            messages: [{
+              role: "system",
+              content: systemPrompt
+            }, {
+              role: "user",
+              content: `Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
+            }],
+            temperature: 0.7,
+            max_tokens: 3500,
+            stream: true,
+          });
+
+          let reasoning_content = "";
+          let content = "";
+          let isReasoningPhase = true;
+
+          for await (const chunk of response) {
+            if (chunk.choices[0]?.delta?.reasoning_content) {
+              reasoning_content += chunk.choices[0].delta.reasoning_content;
+              // 发送思维链内容
+              controller.enqueue(JSON.stringify({
+                type: 'reasoning',
+                content: chunk.choices[0].delta.reasoning_content
+              }) + '\n');
+            } else if (chunk.choices[0]?.delta?.content) {
+              // 如果是第一次收到实际内容，发送一个phase change信号
+              if (isReasoningPhase) {
+                isReasoningPhase = false;
+                controller.enqueue(JSON.stringify({
+                  type: 'phase_change',
+                  from: 'reasoning',
+                  to: 'content'
+                }) + '\n');
+              }
+              content += chunk.choices[0].delta.content;
+              // 发送生成的内容
+              controller.enqueue(JSON.stringify({
+                type: 'content',
+                content: chunk.choices[0].delta.content
+              }) + '\n');
+            }
+          }
+          
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      }
     });
 
-    return NextResponse.json({ insight: response.choices[0].message.content });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+    
   } catch (error) {
     console.error('Insight generation error:', error);
     const { language = 'en' } = await request.json().catch(() => ({}));
