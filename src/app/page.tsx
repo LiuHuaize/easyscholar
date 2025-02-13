@@ -1,41 +1,49 @@
 'use client';
 
-import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon, LanguageIcon } from "@heroicons/react/24/outline";
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
 // 定义搜索选项类型
-type SearchOptionType = 'papers' | 'web';
+type SearchOptionType = 'papers' | 'openalex' | 'arxiv' | 'web';
+type LanguageType = 'en' | 'zh';
 
 export default function Home() {
   const router = useRouter();
   const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [language, setLanguage] = useState<LanguageType>('en');
+  const [showLanguageOptions, setShowLanguageOptions] = useState(false);
   const searchOptionsRef = useRef<HTMLDivElement>(null);
+  const languageOptionsRef = useRef<HTMLDivElement>(null);
 
   // 处理搜索选项点击
   const handleSearchOptionClick = (type: SearchOptionType) => {
     setIsLoading(true);
     const notebookId = uuidv4();
-    // 保存搜索文本和类型到localStorage
+    // 保存搜索文本、类型和语言到localStorage
     localStorage.setItem('notebookSearchQuery', searchText);
     localStorage.setItem('notebookSearchType', type);
+    localStorage.setItem('notebookLanguage', language);
     router.push(`/notebooks/${notebookId}`);
   };
 
   // 处理回车键
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && searchText.trim()) {  // 只有当输入不为空时才响应回车键
       e.preventDefault();
       setShowSearchOptions(true);
     }
   };
 
-  // 点击外部关闭搜索选项
+  // 点击外部关闭搜索选项和语言选项
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (languageOptionsRef.current && !languageOptionsRef.current.contains(event.target as Node)) {
+        setShowLanguageOptions(false);
+      }
       if (searchOptionsRef.current && !searchOptionsRef.current.contains(event.target as Node)) {
         setShowSearchOptions(false);
       }
@@ -94,9 +102,9 @@ export default function Home() {
                       onKeyDown={handleKeyDown}
                     />
                     <button
-                      onClick={() => setShowSearchOptions(true)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-md transition-colors group"
-                      disabled={isLoading}
+                      onClick={() => searchText.trim() && setShowSearchOptions(true)}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-md transition-colors group ${!searchText.trim() ? 'cursor-not-allowed opacity-50' : ''}`}
+                      disabled={isLoading || !searchText.trim()}
                     >
                       {isLoading ? (
                         <div className="w-5 h-5 relative">
@@ -123,9 +131,82 @@ export default function Home() {
                         <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
                           <BookOpenIcon className="w-4 h-4 text-gray-500" />
                         </div>
+                        <div className="flex-1 flex items-center justify-between">
+                          <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium text-gray-700">Semantic Scholar</span>
+                            <span className="text-xs text-gray-500">查找研究论文和文章</span>
+                          </div>
+                          <div className="relative">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowLanguageOptions(!showLanguageOptions);
+                              }}
+                              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                            >
+                              <LanguageIcon className="w-4 h-4 text-gray-500" />
+                            </button>
+                            
+                            {/* 语言选择弹出框 */}
+                            {showLanguageOptions && (
+                              <div 
+                                ref={languageOptionsRef}
+                                className="absolute right-0 top-full mt-1 w-[120px] bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => {
+                                    setLanguage('en');
+                                    setShowLanguageOptions(false);
+                                  }}
+                                  className={`w-full px-3 py-1.5 text-left hover:bg-gray-50/80 transition-colors ${language === 'en' ? 'text-[#087B7B]' : 'text-gray-700'}`}
+                                >
+                                  <span className="text-sm">English</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setLanguage('zh');
+                                    setShowLanguageOptions(false);
+                                  }}
+                                  className={`w-full px-3 py-1.5 text-left hover:bg-gray-50/80 transition-colors ${language === 'zh' ? 'text-[#087B7B]' : 'text-gray-700'}`}
+                                >
+                                  <span className="text-sm">中文</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleSearchOptionClick('openalex')}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group cursor-not-allowed opacity-60"
+                        disabled={true}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                          <BookOpenIcon className="w-4 h-4 text-gray-500" />
+                        </div>
                         <div className="flex flex-col items-start">
-                          <span className="text-sm font-medium text-gray-700">搜索学术论文</span>
-                          <span className="text-xs text-gray-500">查找研究论文和文章</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">OpenAlex</span>
+                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                          </div>
+                          <span className="text-xs text-gray-500">功能开发中</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleSearchOptionClick('arxiv')}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/80 transition-colors group cursor-not-allowed opacity-60"
+                        disabled={true}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                          <BookOpenIcon className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">arXiv</span>
+                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                          </div>
+                          <span className="text-xs text-gray-500">功能开发中</span>
                         </div>
                       </button>
                       <button

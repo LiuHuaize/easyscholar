@@ -65,12 +65,16 @@ export default function NotebooksPage() {
 
       if (validPapers.length === 0) return;
 
+      // 从localStorage获取语言设置
+      const language = localStorage.getItem('notebookLanguage') || 'en';
+
       const response = await fetch('/api/generate-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: query,
-          papers: validPapers
+          papers: validPapers,
+          language
         })
       });
 
@@ -80,7 +84,8 @@ export default function NotebooksPage() {
       setInsightContent(insight);
     } catch (error) {
       console.error('Insight generation error:', error);
-      setInsightContent('无法生成研究洞察');
+      const language = localStorage.getItem('notebookLanguage') || 'en';
+      setInsightContent(language === 'zh' ? '无法生成研究洞察' : 'Failed to generate research insights');
     } finally {
       setInsightLoading(false);
     }
