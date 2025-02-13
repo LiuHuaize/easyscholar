@@ -3,8 +3,8 @@ import OpenAI from 'openai';
 import { generateAPA } from '@/lib/citationUtils';
 
 const client = new OpenAI({
-  apiKey: process.env.AIHUBMIX_API_KEY,
-  baseURL: 'https://aihubmix.com/v1'
+  apiKey: process.env.VOLC_API_KEY || '0deb2718-7709-451c-8af3-53c737babead',
+  baseURL: 'https://ark.cn-beijing.volces.com/api/v3'
 });
 
 export async function POST(request: Request) {
@@ -35,7 +35,7 @@ ID: ${paper.paperId || '未知ID'}
     }).join('\n\n');
     
     const response = await client.chat.completions.create({
-      model: "gemini-2.0-pro-exp-02-05",
+      model: "ep-20250213235903-c2gxm",
       messages: [{
         role: "system",
         content: `You are a research assistant who needs to generate comprehensive insights based on the user's research questions and related paper information.
@@ -70,8 +70,8 @@ Note: Ensure each cite tag is properly closed and data-paper-id uses the actual 
         role: "user",
         content: `中文回答我吧：Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
       }],
-      temperature: 0.67,
-      max_tokens: 2500
+      temperature: 0.7,
+      max_tokens: 2600
     });
 
     return NextResponse.json({ insight: response.choices[0].message.content });
