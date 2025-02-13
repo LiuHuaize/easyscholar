@@ -128,6 +128,10 @@ export default function NotebooksPage() {
               }, 0);
             } else if (data.type === 'phase_change') {
               setIsReasoningPhase(false);
+              // 当思考过程完成后，延迟1秒自动折叠
+              setTimeout(() => {
+                setIsReasoningExpanded(false);
+              }, 1000);
             }
           } catch (e) {
             console.error('Error parsing chunk:', e);
@@ -457,29 +461,29 @@ export default function NotebooksPage() {
           </div>
         )}
 
-        {/* Insight 区域 - 移到搜索结果上方 */}
+        {/* 研究洞察区域 */}
         {(insightContent || insightLoading || reasoningContent || (keywords.length > 0 && !isLoading)) && (
-          <div className="my-6 max-w-[900px] mx-auto p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
+          <div className="my-4 md:my-6 mx-4 md:mx-auto max-w-[900px] p-4 md:p-6 bg-white rounded-lg border border-[#E5F2F2] shadow-sm">
+            <div className="flex items-center gap-2 md:gap-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" className="md:w-5 md:h-5 text-[#087B7B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2v8"/>
                 <path d="m16 6-4-4-4 4"/>
                 <path d="M3 10h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10Z"/>
                 <path d="M7 15h10"/>
                 <path d="M7 19h10"/>
               </svg>
-              <h3 className="text-lg font-medium text-[#111827]">研究洞察</h3>
+              <h3 className="text-base md:text-lg font-medium text-[#111827]">研究洞察</h3>
             </div>
             
             {/* 思考过程区域 */}
             {reasoningContent && (
               <div className="mb-4">
                 <div 
-                  className="flex items-center gap-2 mb-3 cursor-pointer" 
+                  className="flex items-center gap-2 mb-2 md:mb-3 cursor-pointer" 
                   onClick={() => setIsReasoningExpanded(!isReasoningExpanded)}
                 >
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F0F9F9] rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#087B7B]">
+                  <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-[#F0F9F9] rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" className="md:w-3.5 md:h-3.5 text-[#087B7B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
                       <path d="M8.5 8.5v.01"/>
                       <path d="M16 15.5v.01"/>
@@ -487,23 +491,23 @@ export default function NotebooksPage() {
                       <path d="M11 17v.01"/>
                       <path d="M7 14v.01"/>
                     </svg>
-                    <span className="text-sm font-medium text-[#087B7B]">思考过程</span>
+                    <span className="text-xs md:text-sm font-medium text-[#087B7B]">思考过程</span>
                     <ChevronDown 
-                      size={14} 
-                      className={`text-[#087B7B] transform transition-transform duration-200 ${isReasoningExpanded ? '' : '-rotate-90'}`} 
+                      size={12} 
+                      className={`md:w-3.5 md:h-3.5 text-[#087B7B] transform transition-transform duration-200 ${isReasoningExpanded ? '' : '-rotate-90'}`} 
                     />
                   </div>
                   <div className="h-[1px] flex-1 bg-[#E5F2F2]"></div>
                 </div>
                 <div 
-                  className={`transition-all duration-300 ease-in-out ${isReasoningExpanded ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                  className={`transition-all duration-300 ease-in-out ${isReasoningExpanded ? 'max-h-[250px] md:max-h-[300px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
                 >
                   <div className="bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg">
                     <div
                       ref={reasoningContainerRef}
-                      className="text-sm text-[#4B5563] whitespace-pre-wrap p-4 overflow-y-auto"
+                      className="text-xs md:text-sm text-[#4B5563] whitespace-pre-wrap p-3 md:p-4 overflow-y-auto"
                       style={{ 
-                        maxHeight: '300px',
+                        maxHeight: '250px',
                         scrollBehavior: 'smooth'
                       }}
                     >
@@ -516,75 +520,68 @@ export default function NotebooksPage() {
             
             {/* 最终洞察内容区域 */}
             {insightContent ? (
-              <div 
-                ref={insightContainerRef}
-                className="bg-white rounded-lg p-4 mt-4 shadow-md overflow-y-auto"
-                style={{ 
-                  maxHeight: '500px',
-                  scrollBehavior: 'smooth'
-                }}
-              >
+              <div className="text-[#4B5563] leading-relaxed text-sm md:text-base">
                 <MarkdownRenderer content={insightContent} papers={papers} />
               </div>
             ) : insightLoading ? (
-              <div className="flex items-center gap-3 text-[#087B7B] bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+              <div className="flex items-center gap-2 md:gap-3 text-[#087B7B] bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-3 md:p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" className="md:w-4 md:h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
-                <span>正在生成研究洞察...</span>
+                <span className="text-sm md:text-base">正在生成研究洞察...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-gray-500 bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="flex items-center gap-2 md:gap-3 text-gray-500 bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-3 md:p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" className="md:w-4 md:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="16" x2="12" y2="12"/>
                   <line x1="12" y1="8" x2="12.01" y2="8"/>
                 </svg>
-                <span>等待搜索完成后生成研究洞察...</span>
+                <span className="text-sm md:text-base">等待搜索完成后生成研究洞察...</span>
               </div>
             )}
           </div>
         )}
 
         {/* 工具栏 */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-100">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 py-2 md:py-3 px-4 md:px-0 border-b border-gray-100">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <div 
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
+              className="flex items-center gap-1.5 px-2 md:px-2.5 py-1 md:py-1.5 text-sm md:text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <span>排序: 最相关</span>
-                <ChevronDown size={14} />
-                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                <ChevronDown size={12} className="md:w-3.5 md:h-3.5" />
+                <span className="px-1 md:px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] md:text-[11px] font-medium rounded">Beta</span>
               </div>
             </div>
             <div 
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
+              className="flex items-center gap-1.5 px-2 md:px-2.5 py-1 md:py-1.5 text-sm md:text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
             >
-              <div className="flex items-center gap-2">
-                <Filter size={14} />
+              <div className="flex items-center gap-1 md:gap-2">
+                <Filter size={12} className="md:w-3.5 md:h-3.5" />
                 <span>筛选</span>
-                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded">Beta</span>
+                <span className="px-1 md:px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] md:text-[11px] font-medium rounded">Beta</span>
               </div>
             </div>
             <div 
               onClick={() => setIsGlobalTranslated(!isGlobalTranslated)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[15px] ${isGlobalTranslated ? 'bg-[#087B7B] text-white' : 'text-gray-600 hover:bg-gray-50'} rounded-md transition-colors cursor-pointer`}
+              className={`flex items-center gap-1.5 px-2 md:px-2.5 py-1 md:py-1.5 text-sm md:text-[15px] ${isGlobalTranslated ? 'bg-[#087B7B] text-white' : 'text-gray-600 hover:bg-gray-50'} rounded-md transition-colors cursor-pointer`}
             >
               {isGlobalTranslating ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={12} className="md:w-3.5 md:h-3.5 animate-spin" />
                   <span>翻译中...</span>
                 </>
               ) : (
                 <>
-                  <Globe size={14} />
+                  <Globe size={12} className="md:w-3.5 md:h-3.5" />
                   <span>{isGlobalTranslated ? '查看原文' : '翻译全文'}</span>
                 </>
               )}
             </div>
           </div>
-          <div className="text-[15px] text-gray-500">
+          <div className="text-sm md:text-[15px] text-gray-500">
             共找到 {totalResults.toLocaleString()} 篇论文
           </div>
         </div>
