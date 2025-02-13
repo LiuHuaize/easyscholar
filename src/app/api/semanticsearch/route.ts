@@ -7,7 +7,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // 用于控制请求频率的简单限流
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 3000; // 每次请求之间至少间隔3秒
+const MIN_REQUEST_INTERVAL = 300; // 每次请求之间至少间隔0.3秒
 
 async function fetchWithThrottle(url: string) {
     const now = Date.now();
