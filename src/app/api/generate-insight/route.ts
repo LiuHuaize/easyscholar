@@ -106,30 +106,32 @@ Multiple studies<cite data-paper-id="def456">[2]</cite><cite data-paper-id="ghi7
           let content = "";
           let isReasoningPhase = true;
 
+          const encoder = new TextEncoder();
+
           for await (const chunk of response) {
             if (chunk.choices[0]?.delta?.reasoning_content) {
               reasoning_content += chunk.choices[0].delta.reasoning_content;
               // 发送思维链内容
-              controller.enqueue(JSON.stringify({
+              controller.enqueue(encoder.encode(JSON.stringify({
                 type: 'reasoning',
                 content: chunk.choices[0].delta.reasoning_content
-              }) + '\n');
+              }) + '\n'));
             } else if (chunk.choices[0]?.delta?.content) {
               // 如果是第一次收到实际内容，发送一个phase change信号
               if (isReasoningPhase) {
                 isReasoningPhase = false;
-                controller.enqueue(JSON.stringify({
+                controller.enqueue(encoder.encode(JSON.stringify({
                   type: 'phase_change',
                   from: 'reasoning',
                   to: 'content'
-                }) + '\n');
+                }) + '\n'));
               }
               content += chunk.choices[0].delta.content;
               // 发送生成的内容
-              controller.enqueue(JSON.stringify({
+              controller.enqueue(encoder.encode(JSON.stringify({
                 type: 'content',
                 content: chunk.choices[0].delta.content
-              }) + '\n');
+              }) + '\n'));
             }
           }
           
