@@ -7,6 +7,8 @@ const client = new OpenAI({
   baseURL: 'https://ark.cn-beijing.volces.com/api/v3'
 });
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const { question, papers, language = 'en' } = await request.json();
@@ -38,7 +40,7 @@ Abstract: ${paper.abstract || (language === 'zh' ? '无摘要' : 'No abstract')}
       ? `You are a research assistant who needs to generate comprehensive insights based on the user's research questions and related paper information.
 需要根据用户的研究问题和相关论文信息生成综合洞察，用中文输出。
 
-然后分点big tilte， subtilte 希望你可以整理出逻辑，而不是简单的列出发现（每个观点需注明来源论文的引用格式）
+然后分点big tilte， subtilte 希望你可以根据用户的问题整理出逻辑，而不是简单的列出发现（每个观点需注明来源论文的引用格式）
 
 Citation Rules (This is crucial):
    - Each point must include citations
