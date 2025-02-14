@@ -97,8 +97,8 @@ Multiple studies<cite data-paper-id="def456">[2]</cite><cite data-paper-id="ghi7
               role: "user",
               content: `Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
             }],
-            temperature: 0.7,
-            max_tokens: 3000,
+            temperature: 0.65,
+            max_tokens: 3500,
             stream: true,
           });
 
