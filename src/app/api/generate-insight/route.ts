@@ -64,7 +64,7 @@ Format example:
 Please generate insights in English based on the user's research question and related paper information.
 
 List key findings with big titles and subtitles (each point must include paper citations)
-
+not just list the findings (each point must include paper citations)
 Citation Rules (This is crucial):
    - Each point must include citations
    - Citation format examples:
