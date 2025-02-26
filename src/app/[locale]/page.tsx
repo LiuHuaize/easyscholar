@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
+import Navbar from '@/components/Navbar';
 
 // 定义搜索选项类型
 type SearchOptionType = 'papers' | 'openalex' | 'arxiv' | 'web';
@@ -52,29 +53,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center space-x-10">
-          <a href="/" className="text-xl font-semibold text-[#087B7B]">
-            {t('app.name')}
-          </a>
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="/notebooks" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
-              <BookOpenIcon className="h-4 w-4" />
-              <span className="text-sm">{t('navigation.notebooks')}</span>
-            </a>
-            <a href="/library" className="flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
-              <BookmarkIcon className="h-4 w-4" />
-              <span className="text-sm">{t('navigation.library')}</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-8">
-          <button className="text-sm text-gray-600 hover:text-gray-900">
-            {t('navigation.help')}
-          </button>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-5xl mx-auto mt-16 px-6">
         <div className="flex flex-col items-center space-y-8">

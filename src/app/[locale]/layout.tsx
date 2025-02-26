@@ -34,13 +34,13 @@ export default async function LocaleLayout({
   children,
   params,
 }: Props) {
-  const locale = await params.locale;
+  const locale = params.locale;
 
   if (!locales.includes(locale as any)) {
     notFound();
   }
 
-  const messages = await getMessages(locale);
+  const messages = await getMessages({ locale });
 
   return (
     <html lang={locale}>
