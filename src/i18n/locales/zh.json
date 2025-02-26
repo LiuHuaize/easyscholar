@@ -27,7 +27,8 @@
       "papers_loading": "请稍候，论文将逐步显示",
       "enter_question": "输入您的研究问题",
       "ai_help": "AI将帮助您找到相关论文",
-      "error": "搜索失败"
+      "error": "搜索失败",
+      "timeout": "搜索超时"
     },
     "sort": {
       "relevance": "按相关度排序",

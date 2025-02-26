@@ -22,7 +22,8 @@
       "papers_loading": "Please wait, papers will be displayed gradually",
       "enter_question": "Enter your research question",
       "ai_help": "AI will help you find relevant papers",
-      "error": "Search failed"
+      "error": "Search failed",
+      "timeout": "Search timeout"
     },
     "sort": {
       "relevance": "Sort by Relevance",

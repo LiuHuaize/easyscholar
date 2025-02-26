@@ -357,8 +357,8 @@ export default function NotebooksPage() {
             
             // 其他错误或达到最大重试次数，更新UI显示错误
             const errorMessage = error instanceof Error && error.name === 'AbortError' 
-              ? '搜索超时' 
-              : '搜索失败';
+              ? t('search.timeout') 
+              : t('search.error');
               
             setKeywordResults(prev => ({
               ...prev,
@@ -730,13 +730,13 @@ export default function NotebooksPage() {
                                 <div className="flex items-center gap-2">
                                   {retryingKeywords[keyword] ? (
                                     <>
-                                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                                      <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />
                                       <span className="text-amber-500">{t('common.retrying', { count: retryingKeywords[keyword] })}</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                                      <span>{t('notebooks.search.searching')}</span>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      <span>{t('search.searching_papers')}</span>
                                     </>
                                   )}
                                 </div>
@@ -754,12 +754,12 @@ export default function NotebooksPage() {
                               {retryingKeywords[keyword] ? (
                                 <>
                                   <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />
-                                  <span className="text-amber-500">正在重试第 {retryingKeywords[keyword]} 次...</span>
+                                  <span className="text-amber-500">{t('common.retrying', { count: retryingKeywords[keyword] })}</span>
                                 </>
                               ) : (
                                 <>
                                   <Loader2 className="w-4 h-4 animate-spin" />
-                                  <span>正在搜索相关论文...</span>
+                                  <span>{t('search.searching_papers')}</span>
                                 </>
                               )}
                             </div>
