@@ -2,7 +2,7 @@
 
 import { BookOpenIcon, BookmarkIcon, ArrowRightIcon, DocumentArrowUpIcon, SparklesIcon, GlobeAltIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { v4 as uuidv4 } from 'uuid';
 import Navbar from '@/components/Navbar';
@@ -14,10 +14,11 @@ type LanguageType = 'en' | 'zh';
 export default function Home() {
   const t = useTranslations();
   const router = useRouter();
+  const params = useParams();
   const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState<LanguageType>('en');
+  const [language, setLanguage] = useState<LanguageType>(params.locale as LanguageType || 'en');
   const searchOptionsRef = useRef<HTMLDivElement>(null);
 
   // 处理搜索选项点击

@@ -56,9 +56,9 @@ export function TranslateToggle({ text, className = '' }: TranslateToggleProps) 
   };
 
   return (
-    <div className={`${className}`}>
+    <div className={`${className}`} suppressHydrationWarning>
       {/* 文本容器 */}
-      <div className="relative min-h-[1.5em] pb-8">
+      <div className="relative min-h-[1.5em] pb-8" suppressHydrationWarning>
         {/* 原文 */}
         <div 
           style={{
@@ -70,6 +70,7 @@ export function TranslateToggle({ text, className = '' }: TranslateToggleProps) 
             visibility: isTranslated ? 'hidden' : 'visible',
             transition: 'opacity 0.3s ease-in-out'
           }}
+          suppressHydrationWarning
         >
           {text}
         </div>
