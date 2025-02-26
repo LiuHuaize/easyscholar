@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, ChevronDown, Filter, Globe, ChevronRight, Plus, Settings2, Edit2, Loader2, ExternalLink } from 'lucide-react'
+import { Search, ChevronDown, Filter, Globe, ChevronRight, Plus, Settings2, Edit2, Loader2, ExternalLink, RefreshCw } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
@@ -16,6 +16,7 @@ export default function NotebooksPage() {
   const [papers, setPapers] = useState<Paper[]>([])
   const [summaries, setSummaries] = useState<{[key: string]: string}>({})
   const [loadingSummaries, setLoadingSummaries] = useState<{[key: string]: boolean}>({})
+  const [retryingKeywords, setRetryingKeywords] = useState<{[key: string]: number}>({})
   const [totalResults, setTotalResults] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false)
@@ -184,7 +185,7 @@ export default function NotebooksPage() {
   };
 
   // 添加超时控制函数
-  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 30000) => {
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 18000, retryCount = 0, maxRetries = 2) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
@@ -197,6 +198,10 @@ export default function NotebooksPage() {
       return response;
     } catch (error) {
       clearTimeout(id);
+      // 如果是超时错误且未达到最大重试次数，则返回特殊标记
+      if (error instanceof Error && error.name === 'AbortError' && retryCount < maxRetries) {
+        return { isTimeout: true, retryCount: retryCount + 1 };
+      }
       throw error;
     }
   };
@@ -241,72 +246,132 @@ export default function NotebooksPage() {
       
       // 并行处理每个关键词的搜索
       const searchPromises = generatedKeywords.map(async (keyword: string) => {
-        try {
-          const searchType = localStorage.getItem('notebookSearchType') || 'papers';
-          const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
-          
-          // 使用带超时的fetch
-          const response = await fetchWithTimeout(
-            `${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`,
-            {},
-            30000 // 30秒超时
-          );
-          
-          if (!response.ok) throw new Error(`关键词搜索失败: ${keyword}`);
-          const data = await response.json();
-          
-          const transformedPapers = data.articles
-            .map((paper: any) => ({
-              paperId: paper.id,
-              title: paper.title,
-              authors: paper.authors.map((name: string) => ({ name })),
-              abstract: paper.abstract,
-              year: paper.year,
-              venue: paper.journal,
-              citationCount: '暂无',
-              url: paper.semanticUrl,
-              pdfUrl: paper.openAccessPdf,
-              keywords: paper.keywords,
-              searchKeyword: keyword
-            }))
-            .filter((paper: any) => !displayedPaperIds.has(paper.paperId));
-
-          transformedPapers.forEach((paper: any) => {
-            displayedPaperIds.add(paper.paperId);
-          });
-
-          setKeywordResults(prev => ({
-            ...prev,
-            [keyword]: transformedPapers
-          }));
-
-          allPapers = [...allPapers, ...transformedPapers];
-          setPapers(prev => {
-            const newPapers = [...prev, ...transformedPapers];
-            setTotalResults(newPapers.length);
-            return newPapers;
-          });
-
-          // 为每篇论文获取摘要
-          await Promise.all(transformedPapers.map((paper: Paper) => fetchSummary(paper)));
-
-        } catch (error) {
-          console.error(`关键词 ${keyword} 搜索出错:`, error);
-          // 如果是超时错误,显示特定提示
-          const errorMessage = error instanceof Error && error.name === 'AbortError' 
-            ? '搜索超时' 
-            : '搜索失败';
+        let currentRetryCount = 0;
+        let maxRetries = 2; // 最多重试2次
+        
+        while (currentRetryCount <= maxRetries) {
+          try {
+            const searchType = localStorage.getItem('notebookSearchType') || 'papers';
+            const apiEndpoint = searchType === 'papers' ? '/api/semanticsearch' : '/api/websearch';
             
-          setKeywordResults(prev => ({
-            ...prev,
-            [keyword]: []
-          }));
-        } finally {
-          // 无论成功失败都更新加载状态
-          setLoadingKeywords(prev => ({
-            ...prev,
-            [keyword]: false
-          }));
+            // 如果是重试，更新UI状态
+            if (currentRetryCount > 0) {
+              setRetryingKeywords(prev => ({
+                ...prev,
+                [keyword]: currentRetryCount
+              }));
+            }
+            
+            // 使用带超时的fetch
+            const responseOrTimeout = await fetchWithTimeout(
+              `${apiEndpoint}?query=${encodeURIComponent(keyword)}&limit=4&offset=0`,
+              {},
+              17000, // 17秒超时
+              currentRetryCount
+            );
+            
+            // 检查是否是超时需要重试的特殊返回值
+            if (responseOrTimeout && typeof responseOrTimeout === 'object' && 'isTimeout' in responseOrTimeout) {
+              currentRetryCount = responseOrTimeout.retryCount;
+              continue; // 继续下一次重试
+            }
+            
+            // 现在我们知道它是一个真正的Response对象
+            const response = responseOrTimeout as Response;
+            
+            if (!response.ok) throw new Error(`关键词搜索失败: ${keyword}`);
+            const data = await response.json();
+            
+            // 搜索成功，清除重试状态
+            if (currentRetryCount > 0) {
+              setRetryingKeywords(prev => {
+                const newState = {...prev};
+                delete newState[keyword];
+                return newState;
+              });
+            }
+            
+            const transformedPapers = data.articles
+              .map((paper: any) => ({
+                paperId: paper.id,
+                title: paper.title,
+                authors: paper.authors.map((name: string) => ({ name })),
+                abstract: paper.abstract,
+                year: paper.year,
+                venue: paper.journal,
+                citationCount: '暂无',
+                url: paper.semanticUrl,
+                pdfUrl: paper.openAccessPdf,
+                keywords: paper.keywords,
+                searchKeyword: keyword
+              }))
+              .filter((paper: any) => !displayedPaperIds.has(paper.paperId));
+
+            transformedPapers.forEach((paper: any) => {
+              displayedPaperIds.add(paper.paperId);
+            });
+
+            setKeywordResults(prev => ({
+              ...prev,
+              [keyword]: transformedPapers
+            }));
+
+            allPapers = [...allPapers, ...transformedPapers];
+            setPapers(prev => {
+              const newPapers = [...prev, ...transformedPapers];
+              setTotalResults(newPapers.length);
+              return newPapers;
+            });
+
+            // 为每篇论文获取摘要
+            await Promise.all(transformedPapers.map((paper: Paper) => fetchSummary(paper)));
+            
+            // 更新加载状态
+            setLoadingKeywords(prev => ({
+              ...prev,
+              [keyword]: false
+            }));
+            
+            // 成功获取结果，跳出循环
+            break;
+            
+          } catch (error) {
+            console.error(`关键词 ${keyword} 搜索出错:`, error);
+            
+            // 如果是超时错误且未达到最大重试次数，则继续重试
+            if (error instanceof Error && error.name === 'AbortError' && currentRetryCount < maxRetries) {
+              currentRetryCount++;
+              continue;
+            }
+            
+            // 清除重试状态
+            setRetryingKeywords(prev => {
+              const newState = {...prev};
+              delete newState[keyword];
+              return newState;
+            });
+            
+            // 其他错误或达到最大重试次数，更新UI显示错误
+            const errorMessage = error instanceof Error && error.name === 'AbortError' 
+              ? '搜索超时' 
+              : '搜索失败';
+              
+            setKeywordResults(prev => ({
+              ...prev,
+              [keyword]: []
+            }));
+            
+            // 跳出循环
+            break;
+          } finally {
+            // 如果达到最大重试次数，则更新加载状态
+            if (currentRetryCount >= maxRetries) {
+              setLoadingKeywords(prev => ({
+                ...prev,
+                [keyword]: false
+              }));
+            }
+          }
         }
       });
 
@@ -657,8 +722,17 @@ export default function NotebooksPage() {
                             <span className="text-sm text-gray-500">
                               {isLoading ? (
                                 <div className="flex items-center gap-2">
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                                  <span>搜索中...</span>
+                                  {retryingKeywords[keyword] ? (
+                                    <>
+                                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                                      <span className="text-amber-500">重试中 ({retryingKeywords[keyword]}/2)...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
+                                      <span>搜索中...</span>
+                                    </>
+                                  )}
                                 </div>
                               ) : (
                                 `找到 ${keywordPapers.length} 篇相关论文`
@@ -671,8 +745,17 @@ export default function NotebooksPage() {
                         {isLoading ? (
                           <div className="flex items-center justify-center py-8">
                             <div className="flex items-center gap-2 text-gray-400">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>正在搜索相关论文...</span>
+                              {retryingKeywords[keyword] ? (
+                                <>
+                                  <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />
+                                  <span className="text-amber-500">正在重试第 {retryingKeywords[keyword]} 次...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>正在搜索相关论文...</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         ) : keywordPapers.length === 0 ? (

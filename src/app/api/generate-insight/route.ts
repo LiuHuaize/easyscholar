@@ -40,7 +40,7 @@ Abstract: ${paper.abstract || (language === 'zh' ? '无摘要' : 'No abstract')}
       ? `You are a research assistant who needs to generate comprehensive insights based on the user's research questions and related paper information.
 需要根据用户的研究问题和相关论文信息生成综合洞察，用中文输出。
 
-然后分点big tilte， subtilte 希望你可以根据用户的问题整理出逻辑，而不是简单的列出发现（每个观点需注明来源论文的引用格式）
+然后分点big tilte， subtilte 希望你可以根据用户的问题整理出有逻辑有启发性有深度回答，而不是简单的列出发现（每个观点需注明来源论文的引用格式）
 
 Citation Rules (This is crucial):
    - Each point must include citations
@@ -97,7 +97,7 @@ Multiple studies<cite data-paper-id="def456">[2]</cite><cite data-paper-id="ghi7
               role: "user",
               content: `Research Question: ${question}\n\nPaper Information:\n${paperInfos}`
             }],
-            temperature: 0.65,
+            temperature: 0.72,
             max_tokens: 3500,
             stream: true,
           });
