@@ -33,13 +33,19 @@ type Props = {
 export default async function LocaleLayout({
   children,
   params,
-}: Props) {
-  const locale = params.locale;
-
+}: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
+  // 等待 params 解析完成
+  const { locale } = await params;
+  
+  // 验证 locale
   if (!locales.includes(locale as any)) {
     notFound();
   }
 
+  // 获取消息
   const messages = await getMessages({ locale });
 
   return (
