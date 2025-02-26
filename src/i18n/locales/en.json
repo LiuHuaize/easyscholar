@@ -1,0 +1,110 @@
+{
+  "app": {
+    "name": "ResearchAI"
+  },
+  "navigation": {
+    "home": "Home",
+    "notebooks": "Notebooks",
+    "library": "Library",
+    "help": "Help"
+  },
+  "notebooks": {
+    "search": {
+      "placeholder": "Enter your research question, AI will generate keywords to search for related papers...",
+      "completed": "Search completed",
+      "button": "Search",
+      "hotKey": "Press Enter",
+      "generating_keywords": "Generating search keywords...",
+      "searching_papers": "Searching related papers...",
+      "analyzing_question": "AI is analyzing your question",
+      "please_wait": "This may take a few seconds",
+      "searching": "Searching papers...",
+      "papers_loading": "Please wait, papers will be displayed gradually",
+      "enter_question": "Enter your research question",
+      "ai_help": "AI will help you find relevant papers",
+      "error": "Search failed"
+    },
+    "sort": {
+      "relevance": "Sort by Relevance",
+      "date": "Sort by Date",
+      "citations": "Sort by Citations"
+    },
+    "filter": {
+      "title": "Filter",
+      "translate": "Translate"
+    },
+    "results": {
+      "total": "Found {count} papers",
+      "loading": "Loading...",
+      "error": "Failed to load results",
+      "noResults": "No results found"
+    },
+    "paper": {
+      "title": "Paper",
+      "abstract": "Abstract",
+      "summary": "Summary",
+      "cite": "Cite",
+      "view_paper": "Paper",
+      "view_pdf": "PDF",
+      "loading": "Loading...",
+      "error": "Error loading paper",
+      "generating_summary": "Generating summary...",
+      "summary_error": "Cannot access paper, unable to generate summary"
+    },
+    "insight": {
+      "title": "Research Insight",
+      "thinking_process": "Thinking Process",
+      "loading": "Generating research insight...",
+      "generating": "Generating research insight...",
+      "waiting": "Waiting for search to complete to generate research insight...",
+      "error": "Failed to generate research insight"
+    },
+    "keywords": {
+      "title": "Search Keywords"
+    }
+  },
+  "search": {
+    "title": "Discover Research Insights",
+    "placeholder": "Search papers...",
+    "button": "Search",
+    "language": {
+      "title": "Research Insight Language",
+      "chinese": "Chinese",
+      "english": "English"
+    },
+    "options": {
+      "semantic_scholar": {
+        "title": "Semantic Scholar",
+        "description": "Find research papers and articles"
+      },
+      "openalex": {
+        "title": "OpenAlex",
+        "description": "Feature in development"
+      },
+      "arxiv": {
+        "title": "arXiv",
+        "description": "Feature in development"
+      },
+      "web": {
+        "title": "Web Search",
+        "description": "Feature in development"
+      }
+    }
+  },
+  "features": {
+    "pdf_extract": {
+      "title": "Extract data from PDF",
+      "beta": "Beta"
+    },
+    "coming_soon": {
+      "title": "Coming Soon!",
+      "description": "Your documents will be analyzed by AI to provide more accurate search results and contextual responses."
+    }
+  },
+  "common": {
+    "beta": "Beta",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry"
+  }
+} 

@@ -3,6 +3,7 @@
 import { Search, ChevronDown, Filter, Globe, ChevronRight, Plus, Settings2, Edit2, Loader2, ExternalLink, RefreshCw } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Navbar from '@/components/Navbar'
 import CitationButton from '@/components/CitationButton'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
@@ -11,6 +12,9 @@ import { TranslateToggle } from '@/components/TranslateToggle'
 import { translationCache } from '@/lib/translationCache'
 
 export default function NotebooksPage() {
+  const t = useTranslations('notebooks')
+  const commonT = useTranslations('common')
+  const navigationT = useTranslations('navigation')
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchDisabled, setIsSearchDisabled] = useState(false)
   const [papers, setPapers] = useState<Paper[]>([])
@@ -226,7 +230,7 @@ export default function NotebooksPage() {
         body: JSON.stringify({ prompt: query })
       });
       
-      if (!keywordsRes.ok) throw new Error('无法生成关键词');
+      if (!keywordsRes.ok) throw new Error(t('search.error'));
       const { keywords: generatedKeywords } = await keywordsRes.json();
       
       // 设置所有关键词的初始加载状态为true
@@ -384,9 +388,11 @@ export default function NotebooksPage() {
       }
       
     } catch (error) {
-      console.error('搜索出错:', error)
-      setIsLoading(false)
-      setIsGeneratingKeywords(false)
+      console.error('Search error:', error);
+      setIsLoading(false);
+      setIsGeneratingKeywords(false);
+    } finally {
+      setIsSearchDisabled(false);
     }
   }
 
@@ -489,7 +495,7 @@ export default function NotebooksPage() {
                 value={searchQuery}
                 onChange={(e) => !isSearchDisabled && setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                placeholder={isSearchDisabled ? "搜索已完成" : "输入研究问题，AI将生成关键词并搜索相关论文..."}
+                placeholder={isSearchDisabled ? t('search.completed') : t('search.placeholder')}
                 disabled={isSearchDisabled}
                 className={`w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 
                           ${isSearchDisabled 
@@ -512,7 +518,7 @@ export default function NotebooksPage() {
         {/* 关键词展示 */}
         {keywords.length > 0 && (
           <div className="flex items-center gap-2 py-3 border-b border-gray-100">
-            <span className="text-[15px] text-gray-500">搜索关键词：</span>
+            <span className="text-[15px] text-gray-500">{t('keywords.title')}：</span>
             <div className="flex flex-wrap gap-2">
               {keywords.map((keyword, index) => (
                 <span 
@@ -537,7 +543,7 @@ export default function NotebooksPage() {
                 <path d="M7 15h10"/>
                 <path d="M7 19h10"/>
               </svg>
-              <h3 className="text-base md:text-lg font-medium text-[#111827]">研究洞察</h3>
+              <h3 className="text-base md:text-lg font-medium text-[#111827]">{t('insight.title')}</h3>
             </div>
             
             {/* 思考过程区域 */}
@@ -556,7 +562,7 @@ export default function NotebooksPage() {
                       <path d="M11 17v.01"/>
                       <path d="M7 14v.01"/>
                     </svg>
-                    <span className="text-xs md:text-sm font-medium text-[#087B7B]">思考过程</span>
+                    <span className="text-xs md:text-sm font-medium text-[#087B7B]">{t('insight.thinking_process')}</span>
                     <ChevronDown 
                       size={12} 
                       className={`md:w-3.5 md:h-3.5 text-[#087B7B] transform transition-transform duration-200 ${isReasoningExpanded ? '' : '-rotate-90'}`} 
@@ -593,7 +599,7 @@ export default function NotebooksPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" className="md:w-4 md:h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
-                <span className="text-sm md:text-base">正在生成研究洞察...</span>
+                <span className="text-sm md:text-base">{t('insight.generating')}</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 md:gap-3 text-gray-500 bg-[#F9FAFB] border border-[#E5F2F2] rounded-lg p-3 md:p-4">
@@ -602,7 +608,7 @@ export default function NotebooksPage() {
                   <line x1="12" y1="16" x2="12" y2="12"/>
                   <line x1="12" y1="8" x2="12.01" y2="8"/>
                 </svg>
-                <span className="text-sm md:text-base">等待搜索完成后生成研究洞察...</span>
+                <span className="text-sm md:text-base">{t('insight.waiting')}</span>
               </div>
             )}
           </div>
@@ -615,7 +621,7 @@ export default function NotebooksPage() {
               className="flex items-center gap-1.5 px-2 md:px-2.5 py-1 md:py-1.5 text-sm md:text-[15px] text-gray-600 hover:bg-gray-50 rounded-md transition-colors opacity-60 cursor-not-allowed"
             >
               <div className="flex items-center gap-1 md:gap-2">
-                <span>排序: 最相关</span>
+                <span>{t('sort.relevance')}</span>
                 <ChevronDown size={12} className="md:w-3.5 md:h-3.5" />
                 <span className="px-1 md:px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] md:text-[11px] font-medium rounded">Beta</span>
               </div>
@@ -625,7 +631,7 @@ export default function NotebooksPage() {
             >
               <div className="flex items-center gap-1 md:gap-2">
                 <Filter size={12} className="md:w-3.5 md:h-3.5" />
-                <span>筛选</span>
+                <span>{t('filter.title')}</span>
                 <span className="px-1 md:px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] md:text-[11px] font-medium rounded">Beta</span>
               </div>
             </div>
@@ -636,18 +642,18 @@ export default function NotebooksPage() {
               {isGlobalTranslating ? (
                 <>
                   <Loader2 size={12} className="md:w-3.5 md:h-3.5 animate-spin" />
-                  <span>翻译中...</span>
+                  <span>{t('filter.translate')}</span>
                 </>
               ) : (
                 <>
                   <Globe size={12} className="md:w-3.5 md:h-3.5" />
-                  <span>{isGlobalTranslated ? '查看原文' : '翻译全文'}</span>
+                  <span>{t('filter.translate')}</span>
                 </>
               )}
             </div>
           </div>
           <div className="text-sm md:text-[15px] text-gray-500">
-            共找到 {totalResults.toLocaleString()} 篇论文
+            {t('results.total', { count: totalResults.toLocaleString() })}
           </div>
         </div>
 
@@ -662,10 +668,10 @@ export default function NotebooksPage() {
                 </div>
                 <div className="mt-6 flex flex-col items-center">
                   <h3 className="text-lg font-medium text-gray-900 mb-1">
-                    {isGeneratingKeywords ? "生成搜索关键词..." : "搜索相关论文..."}
+                    {isGeneratingKeywords ? t('search.generating_keywords') : t('search.searching_papers')}
                   </h3>
                   <p className="text-[15px] text-gray-500">
-                    {isGeneratingKeywords ? "AI正在分析您的问题" : "这可能需要几秒钟时间"}
+                    {isGeneratingKeywords ? t('search.analyzing_question') : t('search.please_wait')}
                   </p>
                 </div>
               </div>
@@ -674,16 +680,16 @@ export default function NotebooksPage() {
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                   <Search className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">正在搜索论文...</h3>
-                <p className="text-[15px] text-gray-500">请稍候，论文将逐步显示</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">{t('search.searching')}</h3>
+                <p className="text-[15px] text-gray-500">{t('search.papers_loading')}</p>
               </div>
             ) : papers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                   <Search className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">输入您的研究问题</h3>
-                <p className="text-[15px] text-gray-500">AI将帮您找到相关论文</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">{t('search.enter_question')}</h3>
+                <p className="text-[15px] text-gray-500">{t('search.ai_help')}</p>
               </div>
             ) : (
               <>
@@ -698,10 +704,10 @@ export default function NotebooksPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[15px] font-medium text-[#111827]">论文</span>
+                    <span className="text-[15px] font-medium text-[#111827]">{t('paper.title')}</span>
                   </div>
                   <div className="w-[450px] flex-shrink-0">
-                    <span className="text-[15px] font-medium text-[#111827]">摘要总结</span>
+                    <span className="text-[15px] font-medium text-[#111827]">{t('paper.summary')}</span>
                   </div>
                 </div>
 
@@ -841,7 +847,7 @@ export default function NotebooksPage() {
                                           className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
                                         >
                                           <ExternalLink size={12} />
-                                          <span>论文</span>
+                                          <span>{t('paper.view_paper')}</span>
                                         </a>
                                       </>
                                     )}
@@ -855,7 +861,7 @@ export default function NotebooksPage() {
                                           className="flex items-center gap-1 text-[#087B7B] hover:text-[#065e5e] transition-colors"
                                         >
                                           <ExternalLink size={12} />
-                                          <span>PDF</span>
+                                          <span>{t('paper.view_pdf')}</span>
                                         </a>
                                       </>
                                     )}
@@ -869,7 +875,7 @@ export default function NotebooksPage() {
                                 {loadingSummaries[paper.paperId] ? (
                                   <div className="flex items-center gap-2 h-5">
                                     <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                                    <span className="text-xs text-[#6B7280]">生成摘要中...</span>
+                                    <span className="text-xs text-[#6B7280]">{t('paper.generating_summary')}</span>
                                   </div>
                                 ) : summaries[paper.paperId] ? (
                                   <div className="text-[#4B5563] leading-relaxed text-[15px]">
@@ -877,7 +883,7 @@ export default function NotebooksPage() {
                                   </div>
                                 ) : (
                                   <div className="h-5 flex items-center">
-                                    <span className="text-sm text-[#9CA3AF]">无法访问论文，无法生成摘要</span>
+                                    <span className="text-sm text-[#9CA3AF]">{t('paper.summary_error')}</span>
                                   </div>
                                 )}
                               </div>

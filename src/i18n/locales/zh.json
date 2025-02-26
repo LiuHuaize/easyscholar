@@ -1,0 +1,109 @@
+{
+  "app": {
+    "name": "ResearchAI"
+  },
+  "navigation": {
+    "home": "首页",
+    "notebooks": "笔记本",
+    "library": "收藏夹",
+    "help": "帮助"
+  },
+  "notebooks": {
+    "search": {
+      "placeholder": "输入研究问题，AI将生成关键词并搜索相关论文...",
+      "completed": "搜索已完成",
+      "button": "搜索",
+      "hotKey": "按回车键",
+      "generating_keywords": "生成搜索关键词...",
+      "searching_papers": "搜索相关论文...",
+      "analyzing_question": "AI正在分析您的问题",
+      "please_wait": "这可能需要几秒钟时间",
+      "searching": "正在搜索论文...",
+      "papers_loading": "请稍候，论文将逐步显示",
+      "enter_question": "输入您的研究问题",
+      "ai_help": "AI将帮您找到相关论文"
+    },
+    "sort": {
+      "relevance": "按相关度排序",
+      "date": "按日期排序",
+      "citations": "按引用排序"
+    },
+    "filter": {
+      "title": "筛选",
+      "translate": "翻译"
+    },
+    "results": {
+      "total": "共找到 {count} 篇论文",
+      "loading": "加载中...",
+      "error": "加载结果失败",
+      "noResults": "未找到结果"
+    },
+    "paper": {
+      "title": "论文",
+      "abstract": "摘要",
+      "summary": "摘要总结",
+      "cite": "引用",
+      "view_paper": "论文",
+      "view_pdf": "PDF",
+      "loading": "加载中...",
+      "error": "加载论文失败",
+      "generating_summary": "生成摘要中...",
+      "summary_error": "无法访问论文，无法生成摘要"
+    },
+    "insight": {
+      "title": "研究洞察",
+      "thinking_process": "思考过程",
+      "loading": "生成研究洞察中...",
+      "generating": "正在生成研究洞察...",
+      "waiting": "等待搜索完成后生成研究洞察...",
+      "error": "生成研究洞察失败"
+    },
+    "keywords": {
+      "title": "搜索关键词"
+    }
+  },
+  "search": {
+    "title": "发现研究洞察",
+    "placeholder": "搜索论文...",
+    "button": "搜索",
+    "language": {
+      "title": "研究洞察语言",
+      "chinese": "中文",
+      "english": "英文"
+    },
+    "options": {
+      "semantic_scholar": {
+        "title": "Semantic Scholar",
+        "description": "查找研究论文和文章"
+      },
+      "openalex": {
+        "title": "OpenAlex",
+        "description": "功能开发中"
+      },
+      "arxiv": {
+        "title": "arXiv",
+        "description": "功能开发中"
+      },
+      "web": {
+        "title": "网页搜索",
+        "description": "功能开发中"
+      }
+    }
+  },
+  "features": {
+    "pdf_extract": {
+      "title": "从PDF提取数据",
+      "beta": "测试版"
+    },
+    "coming_soon": {
+      "title": "即将推出！",
+      "description": "您的文档将由AI分析，以提供更准确的搜索结果和上下文响应。"
+    }
+  },
+  "common": {
+    "beta": "测试版",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试"
+  }
+} 
