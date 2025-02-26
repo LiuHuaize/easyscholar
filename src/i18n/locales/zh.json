@@ -9,6 +9,11 @@
     "help": "帮助"
   },
   "notebooks": {
+    "notebooks": {
+      "results": {
+        "total": "找到 {count} 篇论文"
+      }
+    },
     "search": {
       "placeholder": "输入您的研究问题，AI将生成关键词搜索相关论文...",
       "completed": "搜索完成",

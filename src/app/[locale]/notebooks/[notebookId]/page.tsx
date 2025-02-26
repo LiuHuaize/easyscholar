@@ -741,7 +741,7 @@ export default function NotebooksPage() {
                                   )}
                                 </div>
                               ) : (
-                                t('notebooks.results.total', { count: keywordPapers.length })
+                                t('results.total', { count: keywordPapers.length })
                               )}
                             </span>
                           </div>

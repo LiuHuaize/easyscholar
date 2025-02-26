@@ -14,7 +14,15 @@ export default function LanguageSwitcher() {
     const newLang = currentLang === 'en' ? 'zh' : 'en'
     // 构建新路径
     const newPath = pathname.replace(`/${currentLang}`, `/${newLang}`)
-    router.push(newPath)
+    
+    // 添加调试日志
+    console.log('Current pathname:', pathname)
+    console.log('Current language:', currentLang)
+    console.log('New language:', newLang)
+    console.log('New path:', newPath)
+    
+    // 使用 replace 而不是 push
+    router.replace(newPath)
   }
 
   const isEnglish = pathname.startsWith('/en')
