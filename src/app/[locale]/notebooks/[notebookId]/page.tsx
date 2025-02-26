@@ -731,7 +731,7 @@ export default function NotebooksPage() {
                                   {retryingKeywords[keyword] ? (
                                     <>
                                       <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />
-                                      <span className="text-amber-500">{t('common.retrying', { count: retryingKeywords[keyword] })}</span>
+                                      <span className="text-amber-500">{commonT('retrying', { count: retryingKeywords[keyword] })}</span>
                                     </>
                                   ) : (
                                     <>
@@ -754,7 +754,7 @@ export default function NotebooksPage() {
                               {retryingKeywords[keyword] ? (
                                 <>
                                   <RefreshCw className="w-4 h-4 animate-spin text-amber-500" />
-                                  <span className="text-amber-500">{t('common.retrying', { count: retryingKeywords[keyword] })}</span>
+                                  <span className="text-amber-500">{commonT('retrying', { count: retryingKeywords[keyword] })}</span>
                                 </>
                               ) : (
                                 <>

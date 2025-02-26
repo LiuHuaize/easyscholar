@@ -107,6 +107,6 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "retry": "Retry",
-    "retrying": "Retrying ({count}/2)..."
+    "retrying": "Retrying (Attempt {count} of 2)..."
   }
 } 

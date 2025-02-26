@@ -51,7 +51,7 @@ Citation Rules (This is crucial):
    - Numbers must match the paper list order
 
 4. Summary:
-   最后用一段话总结主要发现（最后一段不用cite）
+   最后用一段话针对用户的问题总结主要发现（最后一段不用cite）
 
 Format example:
 概述....
@@ -74,7 +74,7 @@ Citation Rules (This is crucial):
    - Numbers must match the paper list order
 
 4. Summary:
-   Summarize main findings in one paragraph (no citations needed in the final paragraph)
+   Summarize main findings in one paragraph according to the user's question(no citations needed in the final paragraph)
 
 Format example:
 Overview....
