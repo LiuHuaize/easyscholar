@@ -18,6 +18,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    optimizeCss: true,
+  },
 }
 
 module.exports = withNextIntl(nextConfig); 

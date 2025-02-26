@@ -3,9 +3,11 @@
 import { BookOpenIcon, BookmarkIcon } from "@heroicons/react/24/outline";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const t = useTranslations('navigation');
 
   const isActivePath = (path: string) => pathname === path;
 
@@ -25,7 +27,7 @@ export default function Navbar() {
                 }`}
               >
                 <BookOpenIcon className="h-4 w-4" />
-                <span className="text-sm">笔记本</span>
+                <span className="text-sm">{t('notebooks')}</span>
               </Link>
               <Link 
                 href="/library" 
@@ -34,7 +36,7 @@ export default function Navbar() {
                 }`}
               >
                 <BookmarkIcon className="h-4 w-4" />
-                <span className="text-sm">收藏夹</span>
+                <span className="text-sm">{t('library')}</span>
               </Link>
             </div>
           </div>
@@ -46,7 +48,7 @@ export default function Navbar() {
                 isActivePath('/help') ? 'text-[#087B7B]' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              帮助
+              {t('help')}
             </Link>
           </div>
         </div>

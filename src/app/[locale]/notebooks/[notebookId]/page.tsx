@@ -731,17 +731,17 @@ export default function NotebooksPage() {
                                   {retryingKeywords[keyword] ? (
                                     <>
                                       <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
-                                      <span className="text-amber-500">重试中 ({retryingKeywords[keyword]}/2)...</span>
+                                      <span className="text-amber-500">{t('common.retrying', { count: retryingKeywords[keyword] })}</span>
                                     </>
                                   ) : (
                                     <>
                                       <Loader2 className="w-3.5 h-3.5 animate-spin text-[#087B7B]" />
-                                      <span>搜索中...</span>
+                                      <span>{t('notebooks.search.searching')}</span>
                                     </>
                                   )}
                                 </div>
                               ) : (
-                                `找到 ${keywordPapers.length} 篇相关论文`
+                                t('notebooks.results.total', { count: keywordPapers.length })
                               )}
                             </span>
                           </div>

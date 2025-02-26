@@ -105,6 +105,7 @@
     "beta": "Beta",
     "loading": "Loading...",
     "error": "An error occurred",
-    "retry": "Retry"
+    "retry": "Retry",
+    "retrying": "Retrying ({count}/2)..."
   }
 } 
