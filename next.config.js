@@ -20,7 +20,9 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
-    serverActions: true
+    serverActions: {
+      allowedOrigins: ['*']
+    }
   },
 }
 
